@@ -1,0 +1,65 @@
+package com.amoyzhp.boardgame.controller;
+
+import com.amoyzhp.boardgame.dto.GeneralResponseDTO;
+import com.amoyzhp.boardgame.dto.SixInRowGameInfoDTO;
+import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
+import com.amoyzhp.boardgame.game.sixinrow.Action;
+import com.amoyzhp.boardgame.game.sixinrow.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.service.SixInRowService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Controller
+public class SixInRowGameController {
+    @Autowired
+    private SixInRowService sixInRowService;
+
+    private static final Logger LOG = LoggerFactory.getLogger(SixInRowGameController.class);
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @RequestMapping(value = "/sixinrow/getnextmove", method = RequestMethod.POST)
+    @ResponseBody
+    public SixInRowGameInfoDTO getNextMove(@RequestBody SixInRowGameInfoDTO receivedDTO){
+        Action receivedAction = Action.fromActionDTO(receivedDTO.getActionDTO());
+        GameState receivedState = GameState.fromGameStateDTO(receivedDTO.getGameStateDTO());
+        int requiredPlayer = receivedDTO.getRequiredPlayer();
+        SixInRowGameInfoDTO gameInfoDTO = sixInRowService.getNextAction(receivedAction, receivedState,
+                requiredPlayer);
+        return gameInfoDTO;
+    }
+
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @RequestMapping(value = "/sixinrow/endgame", method = RequestMethod.POST)
+    @ResponseBody
+    public GeneralResponseDTO endGame(@RequestBody SixInRowGameInfoDTO receivedDTO){
+        GeneralResponseDTO responseDTO = sixInRowService.endGame(receivedDTO);
+        return responseDTO;
+    }
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @RequestMapping(value = "/sixinrow/startgame", method = RequestMethod.GET)
+    @ResponseBody
+    public GeneralResponseDTO startGame(@RequestParam(value="requiredPlayer") int requiredPlayer){
+        GeneralResponseDTO responseDTO = new GeneralResponseDTO();
+        if(isLegalPlayer(requiredPlayer)){
+            LOG.debug("请求成功");
+            responseDTO = sixInRowService.initGame(requiredPlayer);
+        } else {
+            LOG.debug("不合法的 requiredPlayer");
+            responseDTO = GeneralResponseDTO.getInstance(CustomizeErrorCode.DATA_ERROR);
+        }
+        return responseDTO;
+    }
+
+    private boolean isLegalPlayer(int requiredPlayer){
+        if(requiredPlayer == GameConst.BLACK || requiredPlayer == GameConst.WHITE){
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
