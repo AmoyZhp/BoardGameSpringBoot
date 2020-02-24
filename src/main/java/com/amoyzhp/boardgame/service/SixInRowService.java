@@ -1,27 +1,37 @@
 package com.amoyzhp.boardgame.service;
 
+import com.amoyzhp.boardgame.advice.CustomizeExceptionHandler;
 import com.amoyzhp.boardgame.dto.*;
+import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
 import com.amoyzhp.boardgame.exception.CustomizeSuccessCode;
-import com.amoyzhp.boardgame.game.sixinrow.Action;
-import com.amoyzhp.boardgame.game.sixinrow.Agent;
-import com.amoyzhp.boardgame.game.sixinrow.GameState;
-import com.amoyzhp.boardgame.game.sixinrow.SixInRowEnv;
-import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
+import com.amoyzhp.boardgame.game.sixinrow.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SixInRowService {
+    private static final Logger LOG = LoggerFactory.getLogger(SixInRowService.class);
+    private GameWrapper gameWrapper;
 
     public SixInRowGameInfoDTO getNextAction(Action receivedAction, GameState receivedState, int requiredPlayer){
-        SixInRowEnv env = new SixInRowEnv();
+
+
+        gameWrapper = new GameWrapper();
+        gameWrapper.init();
+
+        SixInRowEnv env = gameWrapper.getEnv();
+        Agent agent = gameWrapper.getAgent();
+
+
         env.setGameState(receivedState);
-        Agent agent = new Agent();
         agent.setPlayer(requiredPlayer);
+
         GameState gameState = env.getGameState();
+
         Action action = agent.act(gameState);
         GameState nextGameState = env.step(action);
+
         SixInRowGameInfoDTO responseMessage = new SixInRowGameInfoDTO();
         responseMessage.setActionDTO(ActionDTO.fromRawAction(action));
         responseMessage.setGameStateDTO(GameStateDTO.fromRawGameState(nextGameState));
@@ -35,17 +45,15 @@ public class SixInRowService {
         return generalResponseDTO;
     }
 
-    public GeneralResponseDTO endGame(SixInRowGameInfoDTO receivedDTO) {
+    public GeneralResponseDTO endGame(Action receivedAction, GameState receivedState, int requiredPlayer) {
         GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
-        if(receivedDTO.getGameStateDTO().isTerminal() == true){
-            Action receivedAction = Action.fromActionDTO(receivedDTO.getActionDTO());
-            GameState receivedState = GameState.fromGameStateDTO(receivedDTO.getGameStateDTO());
-            if(receivedState.isTerminal()){
-                generalResponseDTO.setCode(200);
-                generalResponseDTO.setMessage("success");
+        if(receivedState.isTerminal()){
+            if(receivedState.checkTerminal()){
+                generalResponseDTO = GeneralResponseDTO.getInstance(CustomizeSuccessCode.SUCCESS);
+                // 执行写文件操作
             } else {
-                generalResponseDTO.setCode(400);
-                generalResponseDTO.setMessage("it is not terminal situation");
+                generalResponseDTO = GeneralResponseDTO.getInstance(CustomizeErrorCode.DATA_ERROR);
+                generalResponseDTO.setMessage("前后端计算 terminal 状态不匹配");
             }
         } else {
             generalResponseDTO.setCode(401);

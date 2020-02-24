@@ -9,6 +9,10 @@ public class Agent {
     private Policy policy;
     private int player;
 
+    public void init(){
+
+    }
+
     public Action act(GameState gameState){
         Action action;
         policy = new Policy();

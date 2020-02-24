@@ -37,19 +37,22 @@ public class SixInRowGameController {
     @RequestMapping(value = "/sixinrow/endgame", method = RequestMethod.POST)
     @ResponseBody
     public GeneralResponseDTO endGame(@RequestBody SixInRowGameInfoDTO receivedDTO){
-        GeneralResponseDTO responseDTO = sixInRowService.endGame(receivedDTO);
+        Action receivedAction = Action.fromActionDTO(receivedDTO.getActionDTO());
+        GameState receivedState = GameState.fromGameStateDTO(receivedDTO.getGameStateDTO());
+        int requiredPlayer = receivedDTO.getRequiredPlayer();
+        GeneralResponseDTO responseDTO = sixInRowService.endGame(receivedAction, receivedState, requiredPlayer);
         return responseDTO;
     }
+
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @RequestMapping(value = "/sixinrow/startgame", method = RequestMethod.GET)
     @ResponseBody
     public GeneralResponseDTO startGame(@RequestParam(value="requiredPlayer") int requiredPlayer){
         GeneralResponseDTO responseDTO = new GeneralResponseDTO();
         if(isLegalPlayer(requiredPlayer)){
-            LOG.debug("请求成功");
             responseDTO = sixInRowService.initGame(requiredPlayer);
         } else {
-            LOG.debug("不合法的 requiredPlayer");
+            LOG.debug(" Illegal requiredPlayer value {}", requiredPlayer);
             responseDTO = GeneralResponseDTO.getInstance(CustomizeErrorCode.DATA_ERROR);
         }
         return responseDTO;

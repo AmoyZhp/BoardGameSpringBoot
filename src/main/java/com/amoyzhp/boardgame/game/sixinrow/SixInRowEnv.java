@@ -19,6 +19,7 @@ public class SixInRowEnv {
         if(this.gameState.getTimestep() > 0){
             this.gameState.setPos(act.getX2(), act.getY2(), act.getPlayer());
         }
+        this.gameState.addActionsInHistory(act);
         this.gameState.setTimestep(this.gameState.getTimestep() + 1);
         return this.gameState;
     }
