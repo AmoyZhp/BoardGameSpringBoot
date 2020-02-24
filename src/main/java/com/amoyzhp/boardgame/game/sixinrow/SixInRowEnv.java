@@ -12,6 +12,7 @@ public class SixInRowEnv {
 
     public void init(){
         this.gameState = new GameState();
+        this.gameState.init();
     }
 
     public GameState step(Action act){

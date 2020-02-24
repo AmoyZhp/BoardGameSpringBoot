@@ -97,7 +97,7 @@ public class GameState {
         // 45 度
         cnt = 0;
         for(int i = -5; i <= 5; i++){
-            if(x+i < 0 || x+i >= GameConst.BOARD_SIZE || y+i < 0 || y+i >= GameConst.BOARD_SIZE){
+            if(x+i < 0 || x+i >= GameConst.BOARD_SIZE || y-i < 0 || y-i >= GameConst.BOARD_SIZE){
                 continue;
             }
             if(this.chessboard[x+i][y-i] == player){

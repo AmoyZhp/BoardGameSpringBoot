@@ -33,4 +33,8 @@ public class Agent {
         this.player = player;
     }
 
+    public int getPlayer(){
+        return this.player;
+    }
+
 }

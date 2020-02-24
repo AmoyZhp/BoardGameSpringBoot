@@ -49,6 +49,14 @@ public class SixInRowService {
         GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
         if(receivedState.isTerminal()){
             if(receivedState.checkTerminal()){
+                gameWrapper = new GameWrapper();
+                gameWrapper.init();
+
+                SixInRowEnv env = gameWrapper.getEnv();
+                Agent agent = gameWrapper.getAgent();
+                env.setGameState(receivedState);
+                agent.setPlayer(requiredPlayer);
+                gameWrapper.writeGameToXml(env, agent);
                 generalResponseDTO = GeneralResponseDTO.getInstance(CustomizeSuccessCode.SUCCESS);
                 // 执行写文件操作
             } else {
