@@ -33,8 +33,8 @@ public class SixInRowService {
         GameState nextGameState = env.step(action);
 
         SixInRowGameInfoDTO responseMessage = new SixInRowGameInfoDTO();
-        responseMessage.setActionDTO(ActionDTO.fromRawAction(action));
-        responseMessage.setGameStateDTO(GameStateDTO.fromRawGameState(nextGameState));
+        responseMessage.setActionDTO(new ActionDTO(action));
+        responseMessage.setGameStateDTO(new GameStateDTO(nextGameState));
         return responseMessage;
     }
 
@@ -56,7 +56,7 @@ public class SixInRowService {
                 Agent agent = gameWrapper.getAgent();
                 env.setGameState(receivedState);
                 agent.setPlayer(requiredPlayer);
-                gameWrapper.writeGameToXml(env, agent);
+                GameUtil.writeGameHistoryToXml(gameWrapper,"test.xml");
                 generalResponseDTO = GeneralResponseDTO.getInstance(CustomizeSuccessCode.SUCCESS);
                 // 执行写文件操作
             } else {
@@ -68,5 +68,13 @@ public class SixInRowService {
             generalResponseDTO.setMessage("only call for this api when end game");
         }
         return generalResponseDTO;
+    }
+
+    public SixInRowGameInfoDTO getHistoryGame() {
+        SixInRowGameInfoDTO gameInfoDTO = new SixInRowGameInfoDTO();
+        GameWrapper wrapper = GameUtil.readGameHistoryXml("test.xml");
+        GameState state = wrapper.getEnv().getGameState();
+        gameInfoDTO.setGameStateDTO(new GameStateDTO(state));
+        return gameInfoDTO;
     }
 }

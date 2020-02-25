@@ -24,8 +24,8 @@ public class SixInRowGameController {
     @RequestMapping(value = "/sixinrow/getnextmove", method = RequestMethod.POST)
     @ResponseBody
     public SixInRowGameInfoDTO getNextMove(@RequestBody SixInRowGameInfoDTO receivedDTO){
-        Action receivedAction = Action.fromActionDTO(receivedDTO.getActionDTO());
-        GameState receivedState = GameState.fromGameStateDTO(receivedDTO.getGameStateDTO());
+        Action receivedAction = new Action(receivedDTO.getActionDTO());
+        GameState receivedState = new GameState(receivedDTO.getGameStateDTO());
         int requiredPlayer = receivedDTO.getRequiredPlayer();
         SixInRowGameInfoDTO gameInfoDTO = sixInRowService.getNextAction(receivedAction, receivedState,
                 requiredPlayer);
@@ -37,8 +37,8 @@ public class SixInRowGameController {
     @RequestMapping(value = "/sixinrow/endgame", method = RequestMethod.POST)
     @ResponseBody
     public GeneralResponseDTO endGame(@RequestBody SixInRowGameInfoDTO receivedDTO){
-        Action receivedAction = Action.fromActionDTO(receivedDTO.getActionDTO());
-        GameState receivedState = GameState.fromGameStateDTO(receivedDTO.getGameStateDTO());
+        Action receivedAction = new Action(receivedDTO.getActionDTO());
+        GameState receivedState = new GameState(receivedDTO.getGameStateDTO());
         int requiredPlayer = receivedDTO.getRequiredPlayer();
         GeneralResponseDTO responseDTO = sixInRowService.endGame(receivedAction, receivedState, requiredPlayer);
         return responseDTO;
@@ -56,6 +56,13 @@ public class SixInRowGameController {
             responseDTO = GeneralResponseDTO.getInstance(CustomizeErrorCode.DATA_ERROR);
         }
         return responseDTO;
+    }
+
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @RequestMapping(value = "/sixinrow/gethistorygame", method = RequestMethod.GET)
+    @ResponseBody
+    public SixInRowGameInfoDTO getHistoryGame(){
+        return sixInRowService.getHistoryGame();
     }
 
     private boolean isLegalPlayer(int requiredPlayer){

@@ -3,7 +3,11 @@ package com.amoyzhp.boardgame.game.sixinrow;
 import com.amoyzhp.boardgame.dto.ActionDTO;
 import com.amoyzhp.boardgame.dto.GameStateDTO;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.service.SixInRowService;
+import com.oracle.tools.packager.Log;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 
@@ -13,6 +17,34 @@ public class GameState {
     private boolean terminal;
     private int timestep;
     private LinkedList<Action> historyActions;
+    private static final Logger LOG = LoggerFactory.getLogger(GameState.class);
+
+    public GameState(){
+
+    }
+
+    public GameState(GameStateDTO gameStateDTO){
+       this.terminal = gameStateDTO.isTerminal();
+       this.timestep = gameStateDTO.getTimestep();
+       int[][] tempChessboard = gameStateDTO.getChessboard();
+       if(tempChessboard.length != GameConst.BOARD_SIZE || tempChessboard[0].length != GameConst.BOARD_SIZE){
+           LOG.info("chesss board size is wrong, the wrong size is {}",tempChessboard.length);
+       }
+       this.chessboard = new int[tempChessboard.length][tempChessboard[0].length];
+       for(int i = 0; i < tempChessboard.length; i++){
+           for(int j = 0; j < tempChessboard[0].length; j++){
+               this.chessboard[i][j] = tempChessboard[i][j];
+           }
+       }
+       LinkedList<ActionDTO> tempActions = gameStateDTO.getHistoryActions();
+       this.historyActions = new LinkedList<>();
+       Action action;
+       for(int i = 0; i < tempActions.size(); i++){
+           action = new Action(tempActions.get(i));
+           this.historyActions.add(action);
+       }
+    }
+
 
     public void init(){
         this.chessboard = new int[GameConst.BOARD_SIZE][GameConst.BOARD_SIZE];
@@ -35,7 +67,7 @@ public class GameState {
     }
 
     public void addActionsInHistory(Action action){
-        this.historyActions.addLast(action);
+        this.historyActions.add(action);
     }
 
     public boolean checkTerminal(){

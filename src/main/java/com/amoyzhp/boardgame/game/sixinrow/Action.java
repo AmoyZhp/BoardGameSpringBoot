@@ -12,6 +12,19 @@ public class Action {
     private int x2;
     private int y2;
 
+    public Action(){
+
+    }
+
+    public Action(ActionDTO actionDTO){
+        this.player = actionDTO.getPlayer();
+        this.x1 = actionDTO.getX1();
+        this.x2 = actionDTO.getX2();
+        this.y1 = actionDTO.getY1();
+        this.y2 = actionDTO.getY2();
+    }
+
+
     public static Action fromActionDTO(ActionDTO actionDTO){
         Action action = new Action();
         BeanUtils.copyProperties(actionDTO, action);

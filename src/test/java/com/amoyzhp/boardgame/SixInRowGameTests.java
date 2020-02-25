@@ -21,8 +21,13 @@ public class SixInRowGameTests {
         wrapper.writeGameToXml(env, agent);
     }
 
+    public void readXml(){
+        GameUtil.readGameHistoryXml("test.xml");
+    }
+
     public static void main(String[] args) {
         SixInRowGameTests tests = new SixInRowGameTests();
-        tests.writeXmlFileTest();
+        GameWrapper wrapper = GameUtil.readGameHistoryXml("test.xml");
+        System.out.println(wrapper.getEnv().getGameState().getHistoryActions());
     }
 }

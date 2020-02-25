@@ -49,7 +49,7 @@ public class GameWrapper {
             Element rootEle = dom.createElement("gameState");
 
             Element players = dom.createElement("players");
-            e = dom.createElement("BLACK");
+            e = dom.createElement("black");
             if(agent.getPlayer() == GameConst.BLACK){
                 e.setTextContent("AI");
             } else {
@@ -57,7 +57,7 @@ public class GameWrapper {
             }
             players.appendChild(e);
 
-            e = dom.createElement("WHITE");
+            e = dom.createElement("white");
             if(agent.getPlayer() == GameConst.WHITE){
                 e.setTextContent("AI");
             } else {
@@ -75,32 +75,32 @@ public class GameWrapper {
             Element tiemstepEl = null;
             int cnt = 1;
             for(Action action : historyActions){
-                actionEl = dom.createElement("Action");
+                actionEl = dom.createElement("action");
 
                 // move 1
-                moveEl = dom.createElement("Move");
-                xEl = dom.createElement("X");
-                yEl = dom.createElement("Y");
+                moveEl = dom.createElement("move");
+                xEl = dom.createElement("x");
+                yEl = dom.createElement("y");
                 xEl.setTextContent(String.valueOf(action.getX1()));
                 yEl.setTextContent(String.valueOf(action.getY1()));
                 moveEl.appendChild(xEl);
                 moveEl.appendChild(yEl);
                 actionEl.appendChild(moveEl);
                 // move 2
-                moveEl = dom.createElement("Move");
-                xEl = dom.createElement("X");
-                yEl = dom.createElement("Y");
+                moveEl = dom.createElement("move");
+                xEl = dom.createElement("x");
+                yEl = dom.createElement("y");
                 xEl.setTextContent(String.valueOf(action.getX2()));
                 yEl.setTextContent(String.valueOf(action.getY2()));
                 moveEl.appendChild(xEl);
                 moveEl.appendChild(yEl);
                 actionEl.appendChild(moveEl);
 
-                playerEl = dom.createElement("Player");
+                playerEl = dom.createElement("player");
                 playerEl.setTextContent(String.valueOf(action.getPlayer()));
                 actionEl.appendChild(playerEl);
 
-                tiemstepEl = dom.createElement("Timestep");
+                tiemstepEl = dom.createElement("timestep");
                 tiemstepEl.setTextContent(String.valueOf(cnt));
                 actionEl.appendChild(tiemstepEl);
                 cnt++;
@@ -118,7 +118,7 @@ public class GameWrapper {
 
                 // send DOM to file
                 tr.transform(new DOMSource(dom),
-                        new StreamResult(new FileOutputStream("./test.xml")));
+                        new StreamResult(new FileOutputStream("./data/test.xml")));
 
             } catch (TransformerException te) {
                 System.out.println(te.getMessage());
