@@ -1,7 +1,7 @@
 package com.amoyzhp.boardgame.dto;
 
-import com.amoyzhp.boardgame.game.sixinrow.Action;
-import com.amoyzhp.boardgame.game.sixinrow.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import lombok.Data;
 import org.slf4j.Logger;

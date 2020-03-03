@@ -1,6 +1,6 @@
 package com.amoyzhp.boardgame.dto;
 
-import com.amoyzhp.boardgame.game.sixinrow.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

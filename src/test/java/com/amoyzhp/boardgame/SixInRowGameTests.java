@@ -1,13 +1,17 @@
 package com.amoyzhp.boardgame;
 
 import com.amoyzhp.boardgame.game.sixinrow.*;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
+import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
 
 public class SixInRowGameTests {
 
     public void writeXmlFileTest(){
         GameWrapper wrapper = new GameWrapper();
         wrapper.init();
-        SixInRowEnv env = wrapper.getEnv();
+        Environment env = wrapper.getEnv();
         Agent agent = wrapper.getAgent();
         agent.setPlayer(1);
         GameState gameState = env.getGameState();
@@ -26,8 +30,13 @@ public class SixInRowGameTests {
     }
 
     public static void main(String[] args) {
-        SixInRowGameTests tests = new SixInRowGameTests();
-        GameWrapper wrapper = GameUtil.readGameHistoryXml("test.xml");
-        System.out.println(wrapper.getEnv().getGameState().getHistoryActions());
+//        SixInRowGameTests tests = new SixInRowGameTests();
+//        GameWrapper wrapper = GameUtil.readGameHistoryXml("test.xml");
+//        System.out.println(wrapper.getEnv().getGameState().getHistoryActions());
+        Action action = new Action(8,9,10,11,1);
+        Action action2 = new Action(10,11,8,9,1);
+        if(action.hashCode() == action2.hashCode()){
+            System.out.println(action.hashCode());
+        }
     }
 }

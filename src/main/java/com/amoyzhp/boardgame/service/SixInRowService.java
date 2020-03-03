@@ -1,10 +1,13 @@
 package com.amoyzhp.boardgame.service;
 
-import com.amoyzhp.boardgame.advice.CustomizeExceptionHandler;
 import com.amoyzhp.boardgame.dto.*;
 import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
 import com.amoyzhp.boardgame.exception.CustomizeSuccessCode;
 import com.amoyzhp.boardgame.game.sixinrow.*;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
+import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,9 +23,8 @@ public class SixInRowService {
         gameWrapper = new GameWrapper();
         gameWrapper.init();
 
-        SixInRowEnv env = gameWrapper.getEnv();
+        Environment env = gameWrapper.getEnv();
         Agent agent = gameWrapper.getAgent();
-
 
         env.setGameState(receivedState);
         agent.setPlayer(requiredPlayer);
@@ -52,7 +54,7 @@ public class SixInRowService {
                 gameWrapper = new GameWrapper();
                 gameWrapper.init();
 
-                SixInRowEnv env = gameWrapper.getEnv();
+                Environment env = gameWrapper.getEnv();
                 Agent agent = gameWrapper.getAgent();
                 env.setGameState(receivedState);
                 agent.setPlayer(requiredPlayer);

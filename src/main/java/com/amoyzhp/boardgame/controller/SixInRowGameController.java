@@ -3,8 +3,8 @@ package com.amoyzhp.boardgame.controller;
 import com.amoyzhp.boardgame.dto.GeneralResponseDTO;
 import com.amoyzhp.boardgame.dto.SixInRowGameInfoDTO;
 import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
-import com.amoyzhp.boardgame.game.sixinrow.Action;
-import com.amoyzhp.boardgame.game.sixinrow.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.service.SixInRowService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +27,9 @@ public class SixInRowGameController {
         Action receivedAction = new Action(receivedDTO.getActionDTO());
         GameState receivedState = new GameState(receivedDTO.getGameStateDTO());
         int requiredPlayer = receivedDTO.getRequiredPlayer();
+        LOG.debug("recived action " + receivedAction);
+        LOG.debug("recived state " + receivedState);
+        LOG.debug("required player" + requiredPlayer);
         SixInRowGameInfoDTO gameInfoDTO = sixInRowService.getNextAction(receivedAction, receivedState,
                 requiredPlayer);
         return gameInfoDTO;

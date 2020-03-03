@@ -1,12 +1,12 @@
-package com.amoyzhp.boardgame.game.sixinrow;
+package com.amoyzhp.boardgame.game.sixinrow.core;
 
 import lombok.Data;
 
 @Data
-public class SixInRowEnv {
+public class Environment {
     private GameState gameState;
 
-    public SixInRowEnv(){
+    public Environment(){
 
     }
 

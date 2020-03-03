@@ -1,10 +1,8 @@
-package com.amoyzhp.boardgame.game.sixinrow;
+package com.amoyzhp.boardgame.game.sixinrow.core;
 
 import com.amoyzhp.boardgame.dto.ActionDTO;
 import com.amoyzhp.boardgame.dto.GameStateDTO;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
-import com.amoyzhp.boardgame.service.SixInRowService;
-import com.oracle.tools.packager.Log;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +57,7 @@ public class GameState {
     }
 
     public void setPos(int x, int y, int playerSide) {
-        if(this.isLegalPos(x,y)){
+        if(this.isLegalPos(x,y,playerSide)){
             this.chessboard[x][y] = playerSide;
         } else {
             System.out.println("illegal move " + x + " " + y);
@@ -67,7 +65,11 @@ public class GameState {
     }
 
     public void addActionsInHistory(Action action){
-        this.historyActions.add(action);
+        this.historyActions.addLast(action);
+    }
+
+    public Action removeLastAction(){
+        return this.historyActions.pollLast();
     }
 
     public boolean checkTerminal(){
@@ -144,11 +146,11 @@ public class GameState {
         return false;
     }
 
-    public boolean isLegalPos(int x, int y) {
+    public boolean isLegalPos(int x, int y, int player) {
         if(x < 0 || x >= GameConst.BOARD_SIZE || y < 0 || y >= GameConst.BOARD_SIZE){
             return  false;
         }
-        if(this.chessboard[x][y] != GameConst.EMPTY){
+        if(player != GameConst.EMPTY && this.chessboard[x][y] != GameConst.EMPTY){
             return false;
         }
         return true;
@@ -168,6 +170,18 @@ public class GameState {
         }
         gameState.setHistoryActions(historyActionsDTO);
         return gameState;
+    }
+
+    @Override
+    public String toString(){
+        String str = "";
+
+        str = str + "time step : " + timestep;
+        if(this.getHistoryActions().size() > 0)
+        {
+            str += " last action : is" + this.getHistoryActions().getLast();
+        }
+        return str;
     }
 
 }

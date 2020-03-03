@@ -1,4 +1,4 @@
-package com.amoyzhp.boardgame.game.sixinrow;
+package com.amoyzhp.boardgame.game.sixinrow.core;
 
 import com.amoyzhp.boardgame.dto.ActionDTO;
 import lombok.Data;
@@ -11,6 +11,14 @@ public class Action {
     private int y1;
     private int x2;
     private int y2;
+
+    public Action(int x1, int y1, int x2, int y2, int player) {
+        this.player = player;
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+    }
 
     public Action(){
 
@@ -49,10 +57,30 @@ public class Action {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + this.x1;
-        result = 31 * result + this.y1;
-        result = 31 * result + this.x2;
-        result = 31 * result + this.y2;
+        if(this.x1 < this.x2){
+            result = 31 * result + this.x1;
+            result = 31 * result + this.y1;
+            result = 31 * result + this.x2;
+            result = 31 * result + this.y2;
+        } else if(this.x1 > this.x2){
+            result = 31 * result + this.x2;
+            result = 31 * result + this.y2;
+            result = 31 * result + this.x1;
+            result = 31 * result + this.y1;
+        } else {
+            // 此时 x1 = x2
+            if (this.y1 < this.y2){
+                result = 31 * result + this.x1;
+                result = 31 * result + this.y1;
+                result = 31 * result + this.x2;
+                result = 31 * result + this.y2;
+            } else {
+                result = 31 * result + this.x2;
+                result = 31 * result + this.y2;
+                result = 31 * result + this.x1;
+                result = 31 * result + this.y1;
+            }
+        }
         result = 31 * result + this.player;
         return result;
     }

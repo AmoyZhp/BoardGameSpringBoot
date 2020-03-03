@@ -1,7 +1,9 @@
 package com.amoyzhp.boardgame.game.sixinrow;
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
-import com.amoyzhp.boardgame.service.SixInRowService;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
+import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -11,13 +13,11 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 public class GameUtil {
 
@@ -76,7 +76,7 @@ public class GameUtil {
         }
     }
     public static void writeGameHistoryToXml(GameWrapper wrapper, String filename){
-        SixInRowEnv env = wrapper.getEnv();
+        Environment env = wrapper.getEnv();
         Agent agent = wrapper.getAgent();
         Document document = DocumentHelper.createDocument();
         Element root = document.addElement("game");

@@ -5,7 +5,9 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
-import org.xml.sax.*;
+import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
+import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
 import org.w3c.dom.*;
 
 import java.io.FileOutputStream;
@@ -13,17 +15,17 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class GameWrapper {
-    private SixInRowEnv env;
+    private Environment env;
     private Agent agent;
 
     public void init(){
-        this.env = new SixInRowEnv();
+        this.env = new Environment();
         this.agent = new Agent();
         this.env.init();
         this.agent.init();
     }
 
-    public void setEnv(SixInRowEnv env){
+    public void setEnv(Environment env){
         this.env = env;
     }
 
@@ -31,7 +33,7 @@ public class GameWrapper {
         this.agent = agent;
     }
 
-    public SixInRowEnv getEnv(){
+    public Environment getEnv(){
         return this.env;
     }
 
@@ -39,7 +41,7 @@ public class GameWrapper {
         return this.agent;
     }
 
-    public void writeGameToXml(SixInRowEnv env, Agent agent){
+    public void writeGameToXml(Environment env, Agent agent){
         Document dom;
         Element e = null;
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
