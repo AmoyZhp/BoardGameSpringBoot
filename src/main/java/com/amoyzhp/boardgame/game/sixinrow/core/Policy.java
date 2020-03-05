@@ -114,7 +114,7 @@ public class Policy {
         // 偶数时在 min 层终结
         RoadBoard roadBoard = this.simulator.getRoadBoard();
         int initHashCode = this.simulator.getRoadBoard().hashCode();
-        for (Action action : candiacateActions.subList(0,10)){
+        for (Action action : candiacateActions){
             this.simulator.step(action);
             int temp = this.alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, player);
             this.simulator.moveBack();
@@ -125,7 +125,7 @@ public class Policy {
             actionList.add(actionNode);
         }
         //降序排序，val值大的在前面
-        actionList.sort((node1, node2) -> node2.getVal() - node1.getVal());
+        actionList.sort((node1, node2) -> node1.getVal() - node2.getVal());
         // 分数最高的 action
         if(actionList.size() > 0){
             result = actionList.get(0).getAction();

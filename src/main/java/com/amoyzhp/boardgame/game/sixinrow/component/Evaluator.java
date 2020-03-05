@@ -6,7 +6,7 @@ import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
 import java.util.List;
 
 public class Evaluator {
-    private static int[] ROAD_VAL = {0, 9, 520, 2070, 7890, 10020, 1000000};
+    private static int[] ROAD_VAL = {0, 9, 520, 2070, 7890, 10020, 100000};
 
     public int evaluate(RoadBoard roadBoard){
         List<Road> list;

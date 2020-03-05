@@ -45,6 +45,10 @@ public class MoveGenerator {
     private List<Pair<Integer, Integer>> getCandidateMoves(int player, int[][] chessboard,RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads = new ArrayList<>();
+        moveList = this.getKillerMoves(player,chessboard,roadBoard);
+        if(moveList.size() > 0){
+            return moveList;
+        }
         //把二路和三路上的点一起考虑
         roads.addAll(roadBoard.getRoadList(player,3));
         roads.addAll(roadBoard.getRoadList(player,2));
