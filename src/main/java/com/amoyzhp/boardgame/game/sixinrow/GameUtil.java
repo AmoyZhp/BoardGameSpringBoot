@@ -24,6 +24,14 @@ public class GameUtil {
     private static String FILE_PATH = "./data/";
     private static final Logger LOG = LoggerFactory.getLogger(GameUtil.class);
 
+    public static int getNextPlayer(int player){
+        if(player == GameConst.BLACK){
+            return GameConst.WHITE;
+        } else {
+            return GameConst.BLACK;
+        }
+    }
+
     public static Action readAction(Element actionEl){
         Action action = new Action();
         Iterator<Element> actionIt =  actionEl.elementIterator();

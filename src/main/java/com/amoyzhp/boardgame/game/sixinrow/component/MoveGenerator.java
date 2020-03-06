@@ -16,36 +16,44 @@ public class MoveGenerator {
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads;
         roads = roadBoard.getRoadList(player,6);
-        if(roads.size() > 0){
-            for(Road road: roads){
-                moveList.addAll(road.getEmptyPos());
-            }
-            //找到六路上的点说明我们必赢了
-            return moveList;
+        for(Road road: roads){
+            moveList.addAll(road.getEmptyPos());
         }
         roads = roadBoard.getRoadList(player,5);
-        if(roads.size() > 0){
-            for(Road road: roads){
-                moveList.addAll(road.getEmptyPos());
-            }
-            //找到5路上的点也说明我们必赢了
-            return moveList;
+        for(Road road: roads){
+            moveList.addAll(road.getEmptyPos());
         }
         roads = roadBoard.getRoadList(player,4);
-        if(roads.size() > 0){
-            for(Road road: roads){
-                moveList.addAll(road.getEmptyPos());
-            }
-            //找到4路上的点也说明我们必赢了
-            return moveList;
+        for(Road road: roads){
+            moveList.addAll(road.getEmptyPos());
         }
+
         return moveList;
     }
-
+    /*
+    获取候选点的策略是
+    1 如果我方有必胜点，则返回我方必胜点
+    2 否则查找对方是否有必胜点
+    3 都没有必胜点则搜索 3 和 2 路上的路
+    4 还未找到点则搜索 1 路上的点
+    5 由于已经固定了第一个落子的策略，所以排除了在 0 路上搜索的情况
+        K 子棋的落点跟对方和我方的落点有很大关系，所以赞不考虑 0 路
+     */
     private List<Pair<Integer, Integer>> getCandidateMoves(int player, int[][] chessboard,RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads = new ArrayList<>();
+        // 我方必胜点
         moveList = this.getKillerMoves(player,chessboard,roadBoard);
+        if(moveList.size() > 0){
+            return moveList;
+        }
+        // 对方必胜点
+        if(player == GameConst.BLACK){
+            moveList = this.getKillerMoves(GameConst.WHITE,  chessboard, roadBoard);
+        } else {
+            moveList = this.getKillerMoves(GameConst.BLACK,  chessboard, roadBoard);
+        }
+
         if(moveList.size() > 0){
             return moveList;
         }
@@ -88,7 +96,7 @@ public class MoveGenerator {
             Pair<Integer, Integer> firstMove = moveList.get(i);
             for(int j = i + 1; j < moveList.size(); j++){
                 Pair<Integer, Integer> secondMove = moveList.get(j);
-                if(firstMove.getValue() != secondMove.getValue() &&
+                if(firstMove.getValue() != secondMove.getValue() ||
                         firstMove.getKey() != secondMove.getKey()){
                     action = new Action(firstMove.getKey(), firstMove.getValue(),
                             secondMove.getKey(), secondMove.getValue(), player);
