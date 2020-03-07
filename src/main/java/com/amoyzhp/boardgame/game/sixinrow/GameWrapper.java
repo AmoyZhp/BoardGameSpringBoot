@@ -8,6 +8,7 @@ import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
 import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import org.w3c.dom.*;
 
 import java.io.FileOutputStream;
@@ -52,7 +53,7 @@ public class GameWrapper {
 
             Element players = dom.createElement("players");
             e = dom.createElement("black");
-            if(agent.getPlayer() == GameConst.BLACK){
+            if(agent.getPlayer() == Player.BLACK){
                 e.setTextContent("AI");
             } else {
                 e.setTextContent("HUMAN");
@@ -60,7 +61,7 @@ public class GameWrapper {
             players.appendChild(e);
 
             e = dom.createElement("white");
-            if(agent.getPlayer() == GameConst.WHITE){
+            if(agent.getPlayer() == Player.WHITE){
                 e.setTextContent("AI");
             } else {
                 e.setTextContent("HUMAN");

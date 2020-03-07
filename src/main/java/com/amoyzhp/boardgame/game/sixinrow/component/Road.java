@@ -1,6 +1,7 @@
 package com.amoyzhp.boardgame.game.sixinrow.component;
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import javafx.util.Pair;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -10,7 +11,7 @@ import java.util.*;
 
 @Data
 public class Road {
-    final Logger logger = LoggerFactory.getLogger(RoadBoard.class);
+    final Logger LOG = LoggerFactory.getLogger(Road.class);
     private int row;
     private int col;
     private int black;
@@ -40,18 +41,18 @@ public class Road {
         }
     }
 
-    public void setPos(int x, int y, int player){
+    public void setPos(int x, int y, Player player){
         this.increaseStoneCnt(player);
         int index = x*GameConst.BOARD_SIZE + y;
         if(this.emptyPos.containsKey(index)){
             // 加入该点后该位置就不空闲了
             this.emptyPos.remove(index);
         } else {
-            logger.debug("road empty pos map index is not exist x  y " + x + " " + y);
+            LOG.debug("road empty pos map index is not exist x  y " + x + " " + y);
         }
     }
 
-    public void removePos(int x, int y, int player){
+    public void removePos(int x, int y, Player player){
         this.decreaseStoneCnt(player);
         int index = x*GameConst.BOARD_SIZE + y;
         if(this.isLegal(x, y) && !this.emptyPos.containsKey(index)){
@@ -59,28 +60,28 @@ public class Road {
             Pair<Integer, Integer> pos = new Pair<Integer, Integer>(x, y);
             this.emptyPos.put(index, pos);
         } else {
-            logger.debug("位置不合法 : " + x + " " + y);
+            LOG.debug("位置不合法 : " + x + " " + y);
         }
 
     }
 
-    public void increaseStoneCnt(int player){
-        if(player == GameConst.BLACK){
+    public void increaseStoneCnt(Player player){
+        if(player == Player.BLACK){
             this.black++;
-        } else if(player == GameConst.WHITE){
+        } else if(player == Player.WHITE){
             this.white++;
         } else {
-            System.out.println("the player is illegal");
+            LOG.debug("the player is illegal");
         }
     }
 
-    public void decreaseStoneCnt(int player){
-        if(player == GameConst.BLACK){
+    public void decreaseStoneCnt(Player player){
+        if(player == Player.BLACK){
             this.black--;
-        } else if(player == GameConst.WHITE){
+        } else if(player == Player.WHITE){
             this.white--;
         } else {
-            System.out.println("the player is illegal");
+            LOG.debug("the player is illegal");
         }
     }
 

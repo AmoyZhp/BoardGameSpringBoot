@@ -1,13 +1,14 @@
 package com.amoyzhp.boardgame.game.sixinrow.core;
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Agent {
     final Logger logger = LoggerFactory.getLogger(Agent.class);
     private Policy policy;
-    private int player;
+    private Player player;
 
     public void init(){
 
@@ -26,14 +27,14 @@ public class Agent {
         return action;
     }
 
-    public void setPlayer(int player){
-        if(player != GameConst.BLACK && player != GameConst.WHITE){
+    public void setPlayer(Player player){
+        if(player != Player.BLACK && player != Player.WHITE){
             logger.debug("illegal player {}",player);
         }
         this.player = player;
     }
 
-    public int getPlayer(){
+    public Player getPlayer(){
         return this.player;
     }
 

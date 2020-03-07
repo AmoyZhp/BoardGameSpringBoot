@@ -1,18 +1,19 @@
 package com.amoyzhp.boardgame.game.sixinrow.core;
 
 import com.amoyzhp.boardgame.dto.ActionDTO;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 @Data
 public class Action {
-    private int player;
+    private Player player;
     private int x1;
     private int y1;
     private int x2;
     private int y2;
 
-    public Action(int x1, int y1, int x2, int y2, int player) {
+    public Action(int x1, int y1, int x2, int y2, Player player) {
         this.player = player;
         this.x1 = x1;
         this.y1 = y1;
@@ -25,19 +26,13 @@ public class Action {
     }
 
     public Action(ActionDTO actionDTO){
-        this.player = actionDTO.getPlayer();
+        this.player = Player.paraseValue(actionDTO.getPlayer());
         this.x1 = actionDTO.getX1();
         this.x2 = actionDTO.getX2();
         this.y1 = actionDTO.getY1();
         this.y2 = actionDTO.getY2();
     }
 
-
-    public static Action fromActionDTO(ActionDTO actionDTO){
-        Action action = new Action();
-        BeanUtils.copyProperties(actionDTO, action);
-        return action;
-    }
     @Override
     public boolean equals(Object o){
         // 判断是否指向同一个对象
@@ -81,7 +76,7 @@ public class Action {
                 result = 31 * result + this.y1;
             }
         }
-        result = 31 * result + this.player;
+        result = 31 * result + this.player.getValue();
         return result;
     }
 

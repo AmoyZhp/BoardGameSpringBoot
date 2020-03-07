@@ -3,6 +3,7 @@ package com.amoyzhp.boardgame.game.sixinrow.component;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.Set;
 
 public class MoveGenerator {
 
-    private List<Pair<Integer, Integer>> getKillerMoves(int player, int[][] chessboard, RoadBoard roadBoard){
+    private List<Pair<Integer, Integer>> getKillerMoves(Player player, Player[][] chessboard, RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads;
         roads = roadBoard.getRoadList(player,6);
@@ -39,7 +40,7 @@ public class MoveGenerator {
     5 由于已经固定了第一个落子的策略，所以排除了在 0 路上搜索的情况
         K 子棋的落点跟对方和我方的落点有很大关系，所以赞不考虑 0 路
      */
-    private List<Pair<Integer, Integer>> getCandidateMoves(int player, int[][] chessboard,RoadBoard roadBoard){
+    private List<Pair<Integer, Integer>> getCandidateMoves(Player player, Player[][] chessboard,RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads = new ArrayList<>();
         // 我方必胜点
@@ -48,10 +49,10 @@ public class MoveGenerator {
             return moveList;
         }
         // 对方必胜点
-        if(player == GameConst.BLACK){
-            moveList = this.getKillerMoves(GameConst.WHITE,  chessboard, roadBoard);
+        if(player == Player.BLACK){
+            moveList = this.getKillerMoves(Player.WHITE,  chessboard, roadBoard);
         } else {
-            moveList = this.getKillerMoves(GameConst.BLACK,  chessboard, roadBoard);
+            moveList = this.getKillerMoves(Player.BLACK,  chessboard, roadBoard);
         }
 
         if(moveList.size() > 0){
@@ -85,10 +86,10 @@ public class MoveGenerator {
         return moveList;
     }
 
-    public List<Action> getCandidateAction(GameState gameState, RoadBoard roadBoard, int player){
+    public List<Action> getCandidateAction(GameState gameState, RoadBoard roadBoard, Player player){
         List<Action> actionList = new ArrayList<>();
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
-        int[][] chessboard = gameState.getChessboard();
+        Player[][] chessboard = gameState.getChessboard();
         moveList.addAll(this.getCandidateMoves(player, chessboard, roadBoard));
         Set<Integer> actionSet = new HashSet<>();
         Action action;

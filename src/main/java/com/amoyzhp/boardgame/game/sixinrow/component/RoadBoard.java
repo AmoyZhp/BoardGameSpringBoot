@@ -2,6 +2,7 @@ package com.amoyzhp.boardgame.game.sixinrow.component;
 
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,14 +18,12 @@ public class RoadBoard {
     private Road[][][] roadMar;
     //下标 i，j 表示 i 个黑子 j 个白子的路
     private List<List<Map<Integer, Road>>> roadMatrix;
-    private Map<Integer, Road>[][] roadList;
     public RoadBoard(){
 
     }
 
     public void init(){
         this.roadMar = new Road[GameConst.BOARD_SIZE][GameConst.BOARD_SIZE][4];
-        this.roadList = new HashMap[7][7];
         this.roadMatrix = new ArrayList<>();
         for(int i = 0; i < 7 ; i++){
             //初始化一行。第 i 行表示有 i 个黑子的路
@@ -52,7 +51,7 @@ public class RoadBoard {
         }
     }
 
-    public void addPos(int x, int y, int player){
+    public void addPos(int x, int y, Player player){
         // 表示在 x,y 处 player 落子
         for(int k = 0; k < 4; k++){
            for(int i = 0; i < 6; i++){
@@ -73,7 +72,7 @@ public class RoadBoard {
         }
     }
 
-    public void removePos(int x, int y, int player){
+    public void removePos(int x, int y, Player player){
         for(int k = 0; k < 4; k++){
             for(int i = 0; i < 6; i++){
                 int row = x - i * GameConst.DIRECTIONS[k][0];
@@ -94,8 +93,8 @@ public class RoadBoard {
     }
 
     //返回纯色的路
-    public List<Road> getRoadList(int player, int cnt){
-        if(player == GameConst.BLACK){
+    public List<Road> getRoadList(Player player, int cnt){
+        if(player == Player.BLACK){
             return new ArrayList<>(this.roadMatrix.get(cnt).get(0).values());
         }else {
             return new ArrayList<>(this.roadMatrix.get(0).get(cnt).values());

@@ -17,7 +17,7 @@ public class ActionDTO {
     }
 
     public ActionDTO(Action action){
-        this.player = action.getPlayer();
+        this.player = action.getPlayer().getValue();
         this.x1 = action.getX1();
         this.y1 = action.getY1();
         this.x2 = action.getX2();

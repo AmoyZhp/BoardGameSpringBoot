@@ -6,6 +6,7 @@ import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import com.amoyzhp.boardgame.service.SixInRowService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,7 @@ public class SixInRowGameController {
     public SixInRowGameInfoDTO getNextMove(@RequestBody SixInRowGameInfoDTO receivedDTO){
         Action receivedAction = new Action(receivedDTO.getActionDTO());
         GameState receivedState = new GameState(receivedDTO.getGameStateDTO());
-        int requiredPlayer = receivedDTO.getRequiredPlayer();
+        Player requiredPlayer = Player.paraseValue(receivedDTO.getRequiredPlayer());
         LOG.debug("recived action " + receivedAction);
         LOG.debug("recived state " + receivedState);
         LOG.debug("required player" + requiredPlayer);
@@ -42,7 +43,7 @@ public class SixInRowGameController {
     public GeneralResponseDTO endGame(@RequestBody SixInRowGameInfoDTO receivedDTO){
         Action receivedAction = new Action(receivedDTO.getActionDTO());
         GameState receivedState = new GameState(receivedDTO.getGameStateDTO());
-        int requiredPlayer = receivedDTO.getRequiredPlayer();
+        Player requiredPlayer = Player.paraseValue(receivedDTO.getRequiredPlayer());
         GeneralResponseDTO responseDTO = sixInRowService.endGame(receivedAction, receivedState, requiredPlayer);
         return responseDTO;
     }
@@ -52,10 +53,11 @@ public class SixInRowGameController {
     @ResponseBody
     public GeneralResponseDTO startGame(@RequestParam(value="requiredPlayer") int requiredPlayer){
         GeneralResponseDTO responseDTO = new GeneralResponseDTO();
-        if(isLegalPlayer(requiredPlayer)){
-            responseDTO = sixInRowService.initGame(requiredPlayer);
+        Player player = Player.paraseValue(requiredPlayer);
+        if(player != Player.ILLEGAL){
+            responseDTO = sixInRowService.initGame(player);
         } else {
-            LOG.debug(" Illegal requiredPlayer value {}", requiredPlayer);
+            LOG.debug(" Illegal requiredPlayer value {}", player.getValue());
             responseDTO = GeneralResponseDTO.getInstance(CustomizeErrorCode.DATA_ERROR);
         }
         return responseDTO;
@@ -68,11 +70,4 @@ public class SixInRowGameController {
         return sixInRowService.getHistoryGame();
     }
 
-    private boolean isLegalPlayer(int requiredPlayer){
-        if(requiredPlayer == GameConst.BLACK || requiredPlayer == GameConst.WHITE){
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

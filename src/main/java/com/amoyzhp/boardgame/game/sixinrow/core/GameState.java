@@ -3,6 +3,7 @@ package com.amoyzhp.boardgame.game.sixinrow.core;
 import com.amoyzhp.boardgame.dto.ActionDTO;
 import com.amoyzhp.boardgame.dto.GameStateDTO;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,7 @@ import java.util.LinkedList;
 
 @Data
 public class GameState {
-    private int[][] chessboard;
+    private Player[][] chessboard;
     private boolean terminal;
     private int timestep;
     private LinkedList<Action> historyActions;
@@ -28,10 +29,10 @@ public class GameState {
        if(tempChessboard.length != GameConst.BOARD_SIZE || tempChessboard[0].length != GameConst.BOARD_SIZE){
            LOG.info("chesss board size is wrong, the wrong size is {}",tempChessboard.length);
        }
-       this.chessboard = new int[tempChessboard.length][tempChessboard[0].length];
+       this.chessboard = new Player[tempChessboard.length][tempChessboard[0].length];
        for(int i = 0; i < tempChessboard.length; i++){
            for(int j = 0; j < tempChessboard[0].length; j++){
-               this.chessboard[i][j] = tempChessboard[i][j];
+               this.chessboard[i][j] = Player.paraseValue(tempChessboard[i][j]);
            }
        }
        LinkedList<ActionDTO> tempActions = gameStateDTO.getHistoryActions();
@@ -45,10 +46,10 @@ public class GameState {
 
 
     public void init(){
-        this.chessboard = new int[GameConst.BOARD_SIZE][GameConst.BOARD_SIZE];
-        for(int[] row : chessboard){
+        this.chessboard = new Player[GameConst.BOARD_SIZE][GameConst.BOARD_SIZE];
+        for(Player[] row : chessboard){
             for(int i = 0; i < row.length; i++){
-                row[i] = GameConst.EMPTY;
+                row[i] = Player.EMPTY;
             }
         }
         this.terminal = false;
@@ -56,11 +57,11 @@ public class GameState {
         this.historyActions = new LinkedList<>();
     }
 
-    public void setPos(int x, int y, int playerSide) {
-        if(this.isLegalPos(x,y,playerSide)){
-            this.chessboard[x][y] = playerSide;
+    public void setPos(int x, int y, Player player) {
+        if(this.isLegalPos(x,y,player)){
+            this.chessboard[x][y] = player;
         } else {
-            System.out.println("illegal move " + x + " " + y);
+            LOG.debug("invalid move x {} , y {}, player {}",x,y,player.getValue());
         }
     }
 
@@ -84,7 +85,7 @@ public class GameState {
         }
     }
 
-    public boolean hasSixInRow(int x, int y, int player){
+    public boolean hasSixInRow(int x, int y, Player player){
         if(x < 0 || x >= GameConst.BOARD_SIZE || y  < 0 || y >= GameConst.BOARD_SIZE){
             return false;
         }
@@ -146,30 +147,15 @@ public class GameState {
         return false;
     }
 
-    public boolean isLegalPos(int x, int y, int player) {
+    public boolean isLegalPos(int x, int y, Player player) {
         if(x < 0 || x >= GameConst.BOARD_SIZE || y < 0 || y >= GameConst.BOARD_SIZE){
             return  false;
         }
-        if(player != GameConst.EMPTY && this.chessboard[x][y] != GameConst.EMPTY){
+        if(player != Player.EMPTY && this.chessboard[x][y] != Player.EMPTY){
             return false;
         }
         return true;
 
-    }
-
-
-    public static GameState fromGameStateDTO(GameStateDTO gameStateDTO){
-        GameState gameState = new GameState();
-        gameState.setTimestep(gameStateDTO.getTimestep());
-        gameState.setChessboard(gameStateDTO.getChessboard().clone());
-        gameState.setTerminal(gameStateDTO.isTerminal());
-        LinkedList<ActionDTO> rawHistoryActions = gameStateDTO.getHistoryActions();
-        LinkedList<Action> historyActionsDTO = new LinkedList<>();
-        while(rawHistoryActions.size() > 0){
-            historyActionsDTO.addLast(Action.fromActionDTO(rawHistoryActions.pollFirst()));
-        }
-        gameState.setHistoryActions(historyActionsDTO);
-        return gameState;
     }
 
     @Override

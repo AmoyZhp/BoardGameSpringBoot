@@ -8,6 +8,7 @@ import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
 import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class SixInRowService {
     private static final Logger LOG = LoggerFactory.getLogger(SixInRowService.class);
     private GameWrapper gameWrapper;
 
-    public SixInRowGameInfoDTO getNextAction(Action receivedAction, GameState receivedState, int requiredPlayer){
+    public SixInRowGameInfoDTO getNextAction(Action receivedAction, GameState receivedState, Player requiredPlayer){
 
 
         gameWrapper = new GameWrapper();
@@ -40,14 +41,14 @@ public class SixInRowService {
         return responseMessage;
     }
 
-    public GeneralResponseDTO initGame(int player) {
+    public GeneralResponseDTO initGame(Player player) {
         Agent agent = new Agent();
         agent.setPlayer(player);
         GeneralResponseDTO generalResponseDTO = GeneralResponseDTO.getInstance(CustomizeSuccessCode.SUCCESS);
         return generalResponseDTO;
     }
 
-    public GeneralResponseDTO endGame(Action receivedAction, GameState receivedState, int requiredPlayer) {
+    public GeneralResponseDTO endGame(Action receivedAction, GameState receivedState, Player requiredPlayer) {
         GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
         if(receivedState.isTerminal()){
             if(receivedState.checkTerminal()){

@@ -4,6 +4,7 @@ import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.Agent;
 import com.amoyzhp.boardgame.game.sixinrow.core.Environment;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
@@ -24,13 +25,6 @@ public class GameUtil {
     private static String FILE_PATH = "./data/";
     private static final Logger LOG = LoggerFactory.getLogger(GameUtil.class);
 
-    public static int getNextPlayer(int player){
-        if(player == GameConst.BLACK){
-            return GameConst.WHITE;
-        } else {
-            return GameConst.BLACK;
-        }
-    }
 
     public static Action readAction(Element actionEl){
         Action action = new Action();
@@ -54,7 +48,7 @@ public class GameUtil {
             LOG.debug("action xml has next is false");
             return action;
         }
-        action.setPlayer(Integer.parseInt(actionIt.next().getText()));
+        action.setPlayer(Player.paraseValue(Integer.parseInt(actionIt.next().getText())));
         return action;
     }
 
@@ -89,7 +83,7 @@ public class GameUtil {
         Document document = DocumentHelper.createDocument();
         Element root = document.addElement("game");
         Element playerEl = root.addElement("player");
-        if(agent.getPlayer() == GameConst.BLACK) {
+        if(agent.getPlayer() == Player.BLACK) {
             playerEl.addElement("Black").addText("AI");
             playerEl.addElement("White").addText("HUNMAN");
         } else {

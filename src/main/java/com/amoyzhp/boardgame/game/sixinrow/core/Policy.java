@@ -3,6 +3,7 @@ package com.amoyzhp.boardgame.game.sixinrow.core;
 import com.amoyzhp.boardgame.game.sixinrow.component.*;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +27,12 @@ public class Policy {
         this.simulator = new Simulator();
     }
 
-    public Action getFirstMove(GameState gameState, int player){
+    public Action getFirstMove(GameState gameState, Player player){
         Action action = new Action();
-        if(player == GameConst.BLACK){
+        if(player == Player.BLACK){
             action.setX1(9);
             action.setY1(9);
-        } else if(player == GameConst.WHITE){
+        } else if(player == Player.WHITE){
             Action lastAction = gameState.getHistoryActions().getLast();
             int x = lastAction.getX1();
             int y = lastAction.getY1();
@@ -55,16 +56,11 @@ public class Policy {
     // requiredPlayer 是需要为其寻找行动的玩家
     // player 表示当前层数"行动"的玩家，用来区分极大层还是极小层
     public int alphaBetaTreeSearch(int alpha, int beta, int depth,
-                                   int player, int requiredPlayer){
+                                   Player player, Player requiredPlayer){
         if(depth == 0){
             return this.evaluator.evaluate(this.simulator.getRoadBoard());
         }
-        int nextPlayer;
-        if(player == GameConst.BLACK){
-            nextPlayer = GameConst.WHITE;
-        } else {
-            nextPlayer = GameConst.BLACK;
-        }
+        Player nextPlayer = Player.getNextPlayer(player);
         List<Action> candiacateActions = this.moveGenerator.getCandidateAction(
                 this.simulator.getGameState(),this.simulator.getRoadBoard(), player);
 
@@ -92,20 +88,15 @@ public class Policy {
         }
     }
 
-    public Action alphaBetaTreeSearchBegin(GameState gameState, int player){
+    public Action alphaBetaTreeSearchBegin(GameState gameState, Player player){
         // 初始化模拟器
         this.simulator.setGameState(gameState);
         Action result = new Action();
         List<ActionNode> actionList = new ArrayList<>();
         int beta = Integer.MAX_VALUE;
         int alpha = Integer.MIN_VALUE;
-        int nextPlayer;
+        Player nextPlayer = Player.getNextPlayer(player);
         int depth = 1;
-        if(player == GameConst.BLACK){
-            nextPlayer = GameConst.WHITE;
-        } else {
-            nextPlayer = GameConst.BLACK;
-        }
         ActionNode actionNode;
         List<Action> candiacateActions = this.moveGenerator.getCandidateAction(
                 this.simulator.getGameState(),
@@ -136,7 +127,7 @@ public class Policy {
     }
 
     // take random action
-    public Action random(GameState gameState, int player){
+    public Action random(GameState gameState, Player player){
         Action action = new Action();
         int x1;
         int y1;
