@@ -1,7 +1,6 @@
-package com.amoyzhp.boardgame.game.core;
-
-import javafx.util.Pair;
-
+package com.amoyzhp.boardgame.game.model.core;
+import com.amoyzhp.boardgame.game.model.common.Position;
+import java.util.List;
 
 /**
  * The Game Environment
@@ -17,10 +16,11 @@ public interface Environment {
 
     /**
      * 传入一个 Action，环境会基于这个 action 对当前的 state 作出反应
-     * @param action
-     * @return return the next state and the received reward
+     * @param action  action 可以看作一个多维数组。特别地，在棋盘游戏中，action可以看作一个二维数组
+     *                每一行是一个坐标 (x,y)。五子棋只有一行，六子棋有两行，围棋有多行。
+     * @return 返回行动后的棋盘状态
      */
-    StepMessage step(Action action);
+    State step(Action action);
 
     /**
      * 关闭环境，释放资源。（如果有的话）

@@ -1,6 +1,7 @@
 package com.amoyzhp.boardgame.game.sixinrow.component;
 
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
+import com.amoyzhp.boardgame.game.sixinrow.enums.Direction;
 import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import javafx.util.Pair;
 import lombok.Data;
@@ -16,13 +17,13 @@ public class Road {
     private int col;
     private int black;
     private int white;
-    private int dir;
+    private Direction dir;
     private boolean active;
     private int index;
     private Set<Integer> legalPos;
     private Map<Integer, Pair<Integer, Integer>> emptyPos;
 
-    public Road(int row, int col,int dir, int black, int white,int index, boolean active) {
+    public Road(int row, int col, Direction dir, int black, int white, int index, boolean active) {
         this.row = row;
         this.col = col;
         this.black = black;
@@ -33,17 +34,17 @@ public class Road {
         this.emptyPos = new HashMap<>();
         this.legalPos = new HashSet<>();
         for(int i = 0; i < 6 ;i++){
-            int x = row + i*GameConst.DIRECTIONS[dir][0];
-            int y = col + i*GameConst.DIRECTIONS[dir][1];
-            this.legalPos.add(x*GameConst.BOARD_SIZE + y);
+            int x = row + i * dir.rowOffset();
+            int y = col + i * dir.colOffset();
+            this.legalPos.add(x * GameConst.BOARD_SIZE + y);
             Pair<Integer, Integer> pos = new Pair<Integer, Integer>(x, y);
-            this.emptyPos.put(x*GameConst.BOARD_SIZE + y, pos);
+            this.emptyPos.put(x * GameConst.BOARD_SIZE + y, pos);
         }
     }
 
     public void setPos(int x, int y, Player player){
         this.increaseStoneCnt(player);
-        int index = x*GameConst.BOARD_SIZE + y;
+        int index = x * GameConst.BOARD_SIZE + y;
         if(this.emptyPos.containsKey(index)){
             // 加入该点后该位置就不空闲了
             this.emptyPos.remove(index);

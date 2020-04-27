@@ -1,4 +1,4 @@
-package com.amoyzhp.boardgame.dto;
+package com.amoyzhp.boardgame.dto.connectsix;
 
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;

@@ -21,7 +21,12 @@ public class Agent {
         if(gameState.getTimestep() <= 1){
             action = this.policy.getFirstMove(gameState, this.player);
         } else {
-            action = this.policy.alphaBetaTreeSearchBegin(gameState, this.player);
+            action = this.policy.threatSpaceSearchBegin(gameState, this.player);
+            if(action == null){
+                action = this.policy.alphaBetaTreeSearchBegin(gameState, this.player);
+            } else {
+                logger.debug("could win by tss");
+            }
         }
         action.setPlayer(this.player);
         return action;

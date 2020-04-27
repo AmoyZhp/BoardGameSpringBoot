@@ -1,9 +1,8 @@
 package com.amoyzhp.boardgame.game.sixinrow.core;
 
-import com.amoyzhp.boardgame.dto.ActionDTO;
+import com.amoyzhp.boardgame.dto.connectsix.ActionDTO;
 import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import lombok.Data;
-import org.springframework.beans.BeanUtils;
 
 @Data
 public class Action {

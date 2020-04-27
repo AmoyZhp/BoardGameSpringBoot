@@ -1,18 +1,23 @@
 package com.amoyzhp.boardgame.game.sixinrow.core;
 
-import com.amoyzhp.boardgame.dto.ActionDTO;
-import com.amoyzhp.boardgame.dto.GameStateDTO;
+import com.amoyzhp.boardgame.dto.connectsix.ActionDTO;
+import com.amoyzhp.boardgame.dto.connectsix.GameStateDTO;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Random;
 
 @Data
 public class GameState {
     private Player[][] chessboard;
+    private Map<Player,int[][]> zobristTable;
+    private int hashcode;
     private boolean terminal;
     private int timestep;
     private LinkedList<Action> historyActions;
@@ -35,6 +40,24 @@ public class GameState {
                this.chessboard[i][j] = Player.paraseValue(tempChessboard[i][j]);
            }
        }
+        this.hashcode = 0;
+        Random random = new Random();
+        this.zobristTable = new HashMap<>();
+        for(Player player : Player.values()){
+            if(player != Player.ILLEGAL){
+                int[][] zorbrist = new int [GameConst.BOARD_SIZE][GameConst.BOARD_SIZE];
+                for(int i = 0 ; i < zorbrist.length; i++){
+                    for (int j = 0; j < zorbrist[i].length; j++){
+                        zorbrist[i][j] = random.nextInt();
+                        if(player == this.chessboard[i][j]){
+                            this.hashcode = this.hashcode ^ zorbrist[i][j];
+                        }
+                    }
+
+                }
+                this.zobristTable.put(player, zorbrist);
+            }
+        }
        LinkedList<ActionDTO> tempActions = gameStateDTO.getHistoryActions();
        this.historyActions = new LinkedList<>();
        Action action;
@@ -52,14 +75,35 @@ public class GameState {
                 row[i] = Player.EMPTY;
             }
         }
+        this.hashcode = 0;
+        Random random = new Random();
+        this.zobristTable = new HashMap<>();
+        for(Player player : Player.values()){
+            if(player != Player.ILLEGAL){
+                int[][] zorbrist = new int [GameConst.BOARD_SIZE][GameConst.BOARD_SIZE];
+                for(int i = 0 ; i < zorbrist.length; i++){
+                    for (int j = 0; j < zorbrist[i].length; j++){
+                        zorbrist[i][j] = random.nextInt();
+                        if(player == Player.EMPTY){
+                            this.hashcode = this.hashcode ^ zorbrist[i][j];
+                        }
+                    }
+
+                }
+                this.zobristTable.put(player, zorbrist);
+            }
+        }
         this.terminal = false;
         this.timestep = 0;
         this.historyActions = new LinkedList<>();
+
     }
 
     public void setPos(int x, int y, Player player) {
         if(this.isLegalPos(x,y,player)){
+            this.hashcode = this.hashcode ^ this.zobristTable.get(this.chessboard[x][y])[x][y];
             this.chessboard[x][y] = player;
+            this.hashcode = this.hashcode ^ this.zobristTable.get(player)[x][y];
         } else {
             LOG.debug("invalid move x {} , y {}, player {}",x,y,player.getValue());
         }
@@ -168,6 +212,11 @@ public class GameState {
             str += " last action : is" + this.getHistoryActions().getLast();
         }
         return str;
+    }
+
+    @Override
+    public int hashCode(){
+        return this.hashcode;
     }
 
 }

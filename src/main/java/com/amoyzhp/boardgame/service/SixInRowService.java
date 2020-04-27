@@ -1,6 +1,9 @@
 package com.amoyzhp.boardgame.service;
 
 import com.amoyzhp.boardgame.dto.*;
+import com.amoyzhp.boardgame.dto.connectsix.ActionDTO;
+import com.amoyzhp.boardgame.dto.connectsix.GameStateDTO;
+import com.amoyzhp.boardgame.dto.connectsix.SixInRowGameInfoDTO;
 import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
 import com.amoyzhp.boardgame.exception.CustomizeSuccessCode;
 import com.amoyzhp.boardgame.game.sixinrow.*;

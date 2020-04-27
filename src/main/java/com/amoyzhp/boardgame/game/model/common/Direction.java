@@ -1,4 +1,4 @@
-package com.amoyzhp.boardgame.game.sixinrow.enums;
+package com.amoyzhp.boardgame.game.model.common;
 
 /**
  * direction of road

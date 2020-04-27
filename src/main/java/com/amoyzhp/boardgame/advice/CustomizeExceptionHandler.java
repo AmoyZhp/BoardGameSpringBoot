@@ -24,6 +24,7 @@ public class CustomizeExceptionHandler {
     GeneralResponseDTO handle(HttpServletRequest request, HttpServletResponse response, Throwable ex, Model model){
         GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
         if(ex instanceof CustomizeException){
+            LOG.debug(ex.getCause().getMessage());
             generalResponseDTO =  GeneralResponseDTO.getInstance((CustomizeException)ex);
         } else {
             LOG.debug(ex.getCause().getMessage());

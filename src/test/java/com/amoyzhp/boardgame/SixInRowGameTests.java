@@ -23,7 +23,6 @@ public class SixInRowGameTests {
         action.setY2(2);
         action.setPlayer(Player.BLACK);
         env.step(action);
-        wrapper.writeGameToXml(env, agent);
     }
 
     public void readXml(){
@@ -31,13 +30,20 @@ public class SixInRowGameTests {
     }
 
     public static void main(String[] args) {
-//        SixInRowGameTests tests = new SixInRowGameTests();
-//        GameWrapper wrapper = GameUtil.readGameHistoryXml("test.xml");
-//        System.out.println(wrapper.getEnv().getGameState().getHistoryActions());
-        Action action = new Action(8,9,10,11,Player.BLACK);
-        Action action2 = new Action(10,11,8,9,Player.BLACK);
-        if(action.hashCode() == action2.hashCode()){
-            System.out.println(action.hashCode());
-        }
+        GameState state = new GameState();
+        state.init();
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.EMPTY);
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.BLACK);
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.EMPTY);
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.WHITE);
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.EMPTY);
+        System.out.println(state.hashCode());
+        state.setPos(1,1,Player.WHITE);
+        System.out.println(state.hashCode());
     }
 }

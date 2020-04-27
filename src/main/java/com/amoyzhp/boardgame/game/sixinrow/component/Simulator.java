@@ -12,6 +12,7 @@ public class Simulator {
     private GameState gameState;
     private RoadBoard roadBoard;
 
+
     public void setGameState(GameState gameState){
         this.gameState = gameState;
         Player[][] chessboard = gameState.getChessboard();

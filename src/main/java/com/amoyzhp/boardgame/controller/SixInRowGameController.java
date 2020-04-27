@@ -1,11 +1,10 @@
 package com.amoyzhp.boardgame.controller;
 
 import com.amoyzhp.boardgame.dto.GeneralResponseDTO;
-import com.amoyzhp.boardgame.dto.SixInRowGameInfoDTO;
+import com.amoyzhp.boardgame.dto.connectsix.SixInRowGameInfoDTO;
 import com.amoyzhp.boardgame.exception.CustomizeErrorCode;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
-import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import com.amoyzhp.boardgame.service.SixInRowService;
 import org.springframework.beans.factory.annotation.Autowired;

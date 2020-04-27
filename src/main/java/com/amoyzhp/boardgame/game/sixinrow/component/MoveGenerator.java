@@ -3,16 +3,16 @@ package com.amoyzhp.boardgame.game.sixinrow.component;
 import com.amoyzhp.boardgame.game.sixinrow.constant.GameConst;
 import com.amoyzhp.boardgame.game.sixinrow.core.Action;
 import com.amoyzhp.boardgame.game.sixinrow.core.GameState;
+import com.amoyzhp.boardgame.game.sixinrow.core.Policy;
 import com.amoyzhp.boardgame.game.sixinrow.enums.Player;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class MoveGenerator {
-
+    final Logger logger = LoggerFactory.getLogger(MoveGenerator.class);
     private List<Pair<Integer, Integer>> getKillerMoves(Player player, Player[][] chessboard, RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
         List<Road> roads;
@@ -31,14 +31,15 @@ public class MoveGenerator {
 
         return moveList;
     }
+
     /*
-    获取候选点的策略是
-    1 如果我方有必胜点，则返回我方必胜点
-    2 否则查找对方是否有必胜点
-    3 都没有必胜点则搜索 3 和 2 路上的路
-    4 还未找到点则搜索 1 路上的点
-    5 由于已经固定了第一个落子的策略，所以排除了在 0 路上搜索的情况
-        K 子棋的落点跟对方和我方的落点有很大关系，所以赞不考虑 0 路
+        获取候选点的策略是
+        1 如果我方有必胜点，则返回我方必胜点
+        2 否则查找对方是否有必胜点
+        3 都没有必胜点则搜索 3 和 2 路上的路
+        4 还未找到点则搜索 1 路上的点
+        5 由于已经固定了第一个落子的策略，所以排除了在 0 路上搜索的情况
+            K 子棋的落点跟对方和我方的落点有很大关系，所以赞不考虑 0 路
      */
     private List<Pair<Integer, Integer>> getCandidateMoves(Player player, Player[][] chessboard,RoadBoard roadBoard){
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
@@ -86,6 +87,22 @@ public class MoveGenerator {
         return moveList;
     }
 
+    public List<Action> getKillActions(GameState gameState, RoadBoard roadBoard, Player player){
+        Set<Action> actionSet = new HashSet<>();
+        actionSet.addAll(this.getActionsByRoad(gameState, roadBoard, player, 4));
+        actionSet.addAll(this.getActionsByRoad(gameState, roadBoard, player, 5));
+        actionSet.addAll(this.getActionsByRoad(gameState, roadBoard, player, 6));
+        return new LinkedList<>(actionSet);
+    }
+
+    public List<Action> getCauseThreatActions(GameState gameState, RoadBoard roadBoard, Player player){
+        Set<Action> actionSet = new HashSet<>();
+        actionSet.addAll(this.getActionsByRoad(gameState, roadBoard, player, 2));
+        actionSet.addAll(this.getActionsByRoad(gameState, roadBoard, player, 3));
+        actionSet.addAll(this.getKillActions(gameState,roadBoard,player));
+        return new LinkedList<>(actionSet);
+    }
+
     public List<Action> getCandidateAction(GameState gameState, RoadBoard roadBoard, Player player){
         List<Action> actionList = new ArrayList<>();
         List<Pair<Integer, Integer>> moveList = new ArrayList<>();
@@ -109,5 +126,40 @@ public class MoveGenerator {
             }
         }
         return actionList;
+    }
+
+    public Set<Action> getActionsByRoad(GameState gameState, RoadBoard roadBoard, Player player, int roadNum){
+        // 获取 有 roadNum 个 player 落子的路
+        List<Road> roads = roadBoard.getRoadList(player,roadNum);
+        Set<Integer> posSet = new HashSet<>(roads.size());
+        List<Pair<Integer, Integer>> moveList = new ArrayList<>(GameConst.BOARD_SIZE * GameConst.BOARD_SIZE);
+        for(Road road: roads){
+            List<Pair<Integer, Integer>> empty = road.getEmptyPos();
+            for(Pair<Integer, Integer> pos : empty){
+                int index = pos.getKey() * 1000 + pos.getValue();
+                if(posSet.contains(index) == false){
+                    moveList.add(pos);
+                    posSet.add(index);
+                } else {
+//                    logger.debug(" has duplicate move");
+                }
+            }
+        }
+        Set<Action> actionSet = new HashSet<>(moveList.size()*moveList.size());
+        for(int i = 0; i < moveList.size(); i++){
+            Pair<Integer, Integer> firstMove = moveList.get(i);
+            for(int j = i + 1; j < moveList.size(); j++){
+                Pair<Integer, Integer> secondMove = moveList.get(j);
+                if(firstMove.getValue() != secondMove.getValue() ||
+                        firstMove.getKey() != secondMove.getKey()){
+                    Action action = new Action(firstMove.getKey(), firstMove.getValue(),
+                            secondMove.getKey(), secondMove.getValue(), player);
+                    //remove duplicate action
+                    actionSet.add(action);
+                }
+            }
+        }
+        return actionSet;
+
     }
 }
