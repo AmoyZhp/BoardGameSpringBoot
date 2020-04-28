@@ -49,8 +49,7 @@ public class GomokuSimulator implements Simulator {
     public void moveBack() {
         Action action = this.historyActions.removeLast();
         Position position = action.getPositions().get(0);
-        GomokuPlayer player = GomokuPlayer.paraseValue(action.getPlayer().getValue());
-        this.getGameState().updateState(position, player);
+        this.state.updateState(position, GomokuPlayer.EMPTY);
         this.roadBoard.updateRoad(position, GomokuPlayer.EMPTY);
     }
 }

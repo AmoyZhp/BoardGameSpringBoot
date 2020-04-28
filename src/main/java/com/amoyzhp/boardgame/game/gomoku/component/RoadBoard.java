@@ -206,6 +206,26 @@ public class RoadBoard {
         return result;
     }
 
+    public Set<Position> getPosOnLiveTwoRoad(GomokuPlayer player) {
+        Set<Position> result = new HashSet<>();
+        Set<Road> twoRoads = new HashSet<>();
+        if(player == GomokuPlayer.BLACK){
+            twoRoads = this.getRoads(2, 0);
+        } else if (player == GomokuPlayer.WHITE){
+            twoRoads = this.getRoads(0,2);
+        } else {
+            logger.debug("invalid player type");
+        }
+        for(Road road : twoRoads){
+            int pattern = road.getPattern();
+            //符合下列三个要求的就是活2 OXXOO OOXXO OXOXO
+            if(pattern == 1100 || pattern == 110 || pattern == 1010){
+                result.addAll(road.getEmptyPoes());
+            }
+        }
+        return result;
+    }
+
     private class Road{
         private int rowBegin;
         private int colBegin;
@@ -325,11 +345,11 @@ public class RoadBoard {
             assert patternOffset >= 0 && patternOffset < 5;
 
             switch (patternOffset){
-                case 0 : this.pattern += remove * 1; break;
-                case 1 : this.pattern += remove * 10; break;
+                case 0 : this.pattern += remove * 10000; break;
+                case 1 : this.pattern += remove * 1000; break;
                 case 2 : this.pattern += remove * 100; break;
-                case 3 : this.pattern += remove * 1000; break;
-                case 4 : this.pattern += remove * 10000; break;
+                case 3 : this.pattern += remove * 10; break;
+                case 4 : this.pattern += remove * 1; break;
                 default: logger.debug("pattern offset error");break;
             }
         }

@@ -5,10 +5,7 @@ import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Position;
 import com.amoyzhp.boardgame.game.model.core.Action;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * implementation of actions generator
@@ -66,17 +63,13 @@ public class GomokuActionsGenerator {
 
         positions = roadBoard.getEmptyPosOnRoad(4, player);
         if (positions.size() > 0){
-            for(Position position : positions){
-                actions.add(new GomokuAction(position.row(), position.col(), player));
-            }
+            actions = this.posToAction(positions, player);
             return  actions;
         }
 
         positions = roadBoard.getEmptyPosOnRoad(4, nextPlayer);
         if (positions.size() > 0){
-            for(Position position : positions){
-                actions.add(new GomokuAction(position.row(), position.col(), player));
-            }
+            actions = this.posToAction(positions, player);
             return  actions;
         }
 
@@ -86,20 +79,34 @@ public class GomokuActionsGenerator {
         positions.addAll(roadBoard.getEmptyPosOnRoad(3, nextPlayer));
         positions.addAll(roadBoard.getEmptyPosOnRoad(2, nextPlayer));
         if (positions.size() > 0){
-            for(Position position : positions){
-                actions.add(new GomokuAction(position.row(), position.col(), player));
-            }
+            actions = this.posToAction(positions, player);
             return  actions;
         }
 
         positions = roadBoard.getEmptyPosOnRoad(1, player);
         if (positions.size() > 0){
-            for(Position position : positions){
-                actions.add(new GomokuAction(position.row(), position.col(), player));
-            }
+            actions = this.posToAction(positions, player);
             return  actions;
         }
         assert positions.size() > 0;
+        return actions;
+    }
+
+    public List<Action> getTSSCandidateActions(GomokuSimulator simulator, GomokuPlayer player) {
+        List<Action> result = new LinkedList<>();
+        RoadBoard roadBoard = simulator.getRoadBoard();
+        Set<Position> positions = new HashSet<>();
+        positions.addAll(roadBoard.getPosOnLiveThreeRoad(player));
+        positions.addAll(roadBoard.getPosOnLiveTwoRoad(player));
+        result = this.posToAction(positions, player);
+        return result;
+    }
+
+    private List<Action> posToAction(Set<Position> positions, GomokuPlayer player){
+        List<Action> actions = new LinkedList<>();
+        for(Position position : positions){
+            actions.add(new GomokuAction(position, player));
+        }
         return actions;
     }
 }

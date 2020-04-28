@@ -1,10 +1,13 @@
 package com.amoyzhp.boardgame.game.gomoku.core;
 
 import com.amoyzhp.boardgame.dto.gomoku.GomokuStateDTO;
+import com.amoyzhp.boardgame.game.gomoku.component.RoadBoard;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.common.Position;
 import com.amoyzhp.boardgame.game.model.core.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -15,6 +18,7 @@ import java.util.List;
  * @CreatedDate: 2020/03/09
  */
 public class GomokuState implements State {
+    final Logger logger = LoggerFactory.getLogger(GomokuState.class);
     private int width;
     private int height;
     private boolean terminal;
@@ -41,6 +45,7 @@ public class GomokuState implements State {
             this.chessboard[position.row()][position.col()] = player.getValue();
             return true;
         }
+
         return false;
     }
 
@@ -92,12 +97,14 @@ public class GomokuState implements State {
         int row = position.row();
         int col = position.col();
         if(row < 0 || row >= this.height || col < 0 || col >= this.width){
+            logger.debug(String.format("index out of range : row %d , col %d", row,col));
             return false;
         }
         if(player.getValue() == GomokuPlayer.EMPTY.getValue()){
             return  true;
         }
         if(this.chessboard[row][col] != GomokuPlayer.EMPTY.getValue()){
+            logger.debug(String.format("pos in not empty : row %d , col %d, player %d", row,col,player.getValue()));
             return false;
         }
         return true;
