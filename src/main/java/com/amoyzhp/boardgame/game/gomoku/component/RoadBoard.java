@@ -150,6 +150,59 @@ public class RoadBoard {
 
     public Set<Position> getPosOnLiveThreeRoad(GomokuPlayer player) {
         Set<Position> result = new HashSet<>();
+        Set<Road> threeRoads = new HashSet<>();
+        if(player == GomokuPlayer.BLACK){
+            threeRoads = this.getRoads(3, 0);
+        } else if (player == GomokuPlayer.WHITE){
+            threeRoads = this.getRoads(0,3);
+        } else {
+            logger.debug("invalid player type");
+        }
+
+        for(Road road : threeRoads){
+            if(road.getPattern() == 1110){
+                // OXXXO 的形式
+                result.addAll(road.getEmptyPoes());
+            } else if(road.getPattern() == 11010){
+                // OXXOXO 的形式
+                int rowPos = road.getRowBegin() - road.getDirection().rowOffset();
+                int colPos = road.getColBegin() - road.getDirection().colOffset();
+                Road lastRoad = this.getRoad(rowPos, colPos, road.getDirection());
+                if(lastRoad != null && lastRoad.getPattern() == 1101){
+                    Set<Position> roadTemp = road.getEmptyPoes();
+                    Set<Position> lastRoadTemp = lastRoad.getEmptyPoes();
+                    int cnt = 0;
+                    for(Position position : roadTemp){
+                        if(lastRoadTemp.contains(position)){
+                            result.add(position);
+                            cnt += 1;
+                        }
+                    }
+                    if(cnt > 1){
+                        logger.debug("live three pos find error");
+                    }
+                }
+            } else if(road.getPattern() == 10110){
+                // OXOXXO 的形式
+                int rowPos = road.getRowBegin() - road.getDirection().rowOffset();
+                int colPos = road.getColBegin() - road.getDirection().colOffset();
+                Road lastRoad = this.getRoad(rowPos, colPos, road.getDirection());
+                if(lastRoad != null && lastRoad.getPattern() == 1011){
+                    Set<Position> roadTemp = road.getEmptyPoes();
+                    Set<Position> lastRoadTemp = lastRoad.getEmptyPoes();
+                    int cnt = 0;
+                    for(Position position : roadTemp){
+                        if(lastRoadTemp.contains(position)){
+                            result.add(position);
+                            cnt += 1;
+                        }
+                    }
+                    if(cnt > 1){
+                        logger.debug("live three pos find error");
+                    }
+                }
+            }
+        }
         return result;
     }
 
@@ -303,6 +356,10 @@ public class RoadBoard {
 
         public Direction getDirection() {
             return direction;
+        }
+
+        public int getPattern(){
+            return this.pattern;
         }
 
         @Override
