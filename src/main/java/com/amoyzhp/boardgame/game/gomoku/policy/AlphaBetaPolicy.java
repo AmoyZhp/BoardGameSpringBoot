@@ -25,6 +25,10 @@ import java.util.List;
  */
 public class AlphaBetaPolicy implements Policy {
 
+    private final int DEFAULT_DEPTH = 1;
+    // -1 就是没有限制
+    private final long DEFAULT_TIME_LIMIT = -1;
+
     final Logger logger = LoggerFactory.getLogger(AlphaBetaPolicy.class);
 
     private GomokuActionsGenerator moveGenerator;
@@ -33,12 +37,32 @@ public class AlphaBetaPolicy implements Policy {
 
     private GomokuEvaluator evaluator;
 
+    private long beginTime;
+    private long currentTime;
+    private long timeLimit;
+
     public AlphaBetaPolicy(){
         this.moveGenerator = new GomokuActionsGenerator();
         this.evaluator = new GomokuEvaluator();
     }
 
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player) {
+    public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
+        return this.getAction(simulator, player, this.DEFAULT_DEPTH, this.DEFAULT_TIME_LIMIT);
+    }
+
+    public Action getAction(GomokuSimulator simulator, GomokuPlayer player, int depth, long timeLimit) {
+        if(depth <= 0){
+            depth = 1;
+        }
+        if(this.timeLimit < 0){
+            this.timeLimit = -1;
+        }
+        else {
+            this.timeLimit = timeLimit;
+        }
+
+        this.beginTime = System.currentTimeMillis();
+
         this.simulator = simulator;
         int initStateHashcode = simulator.getGameState().hashCode();
         Action action = null;
@@ -46,12 +70,12 @@ public class AlphaBetaPolicy implements Policy {
         int alpha = Integer.MIN_VALUE;
 
         int nextPlayer = GomokuPlayer.getNextPlayer(player.getValue()).getValue();
-        int depth = GameConst.ALPHA_BETA_DEPTH;
 
         // 获取用来进行搜索的候选点
         List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator, player);
         List<ActionNode> selectedActionNodes = new ArrayList<>(candidateActions.size());
-
+        logger.info("ab depth is " + depth);
+        logger.info("time limit" + this.timeLimit);
         for(Action act : candidateActions){
             this.simulator.step(act);
             int temp = this.alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, player.getValue());
@@ -67,6 +91,8 @@ public class AlphaBetaPolicy implements Policy {
             action = selectedActionNodes.get(0).getAction();
         }
         assert  initStateHashcode == simulator.getGameState().hashCode();
+        this.currentTime = System.currentTimeMillis();
+        logger.info("AB search time is " + (currentTime - beginTime) / 1000.0 + " s ");
         return  action;
 
     }
@@ -74,6 +100,12 @@ public class AlphaBetaPolicy implements Policy {
     public int alphaBetaTreeSearch(int alpha, int beta, int depth, int player, int requiredPlayer) {
         if(depth == 0){
             return this.evaluator.evaluate(this.simulator.getRoadBoard(), GomokuPlayer.paraseValue(player));
+        }
+        if(timeLimit >= 0){
+            this.currentTime = System.currentTimeMillis();
+            if(this.currentTime - this.beginTime >= this.timeLimit){
+                return this.evaluator.evaluate(this.simulator.getRoadBoard(), GomokuPlayer.paraseValue(player));
+            }
         }
 
         int nextPlayer = GomokuPlayer.getNextPlayer(player).getValue();

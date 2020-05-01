@@ -1,5 +1,6 @@
 package com.amoyzhp.boardgame.service;
 
+import com.amoyzhp.boardgame.dto.gomoku.DebugInfo;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuActionDTO;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuGameDTO;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuStateDTO;
@@ -26,15 +27,14 @@ public class GomokuService {
     private static final Logger LOG = LoggerFactory.getLogger(GomokuService.class);
 
     public GomokuGameDTO getNextAction(State state, LinkedList<Action> historyActions,
-                                       int requiredPlayer, int timestep) {
-        // 将从前端得到的数据用于初始化 agent 和 环境
+                                       int requiredPlayer, int timestep, DebugInfo debugInfo) {
         GomokuAgent agent = new GomokuAgent(GomokuPlayer.paraseValue(requiredPlayer));
         GomokuEnvironment env = new GomokuEnvironment();
 
         env.init(state, historyActions, timestep);
 
         // 获取下一个行动和状态
-        Action action = agent.act(state,timestep);
+        Action action = agent.act(state, timestep, debugInfo);
         State nextState = env.step(action);
 
         // 回传行动和状态

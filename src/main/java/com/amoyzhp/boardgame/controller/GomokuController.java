@@ -1,6 +1,7 @@
 package com.amoyzhp.boardgame.controller;
 
 import com.amoyzhp.boardgame.dto.GeneralResponseDTO;
+import com.amoyzhp.boardgame.dto.gomoku.DebugInfo;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuActionDTO;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuGameDTO;
 import com.amoyzhp.boardgame.dto.gomoku.GomokuStateDTO;
@@ -23,16 +24,18 @@ import java.util.List;
  * @Author: Tuseday Boy
  * @CreatedDate: 2020/03/26
  */
+
 @Controller
 public class GomokuController {
     private static final Logger LOG = LoggerFactory.getLogger(GomokuController.class);
     @Autowired
     private GomokuService service;
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @CrossOrigin(origins = "http://localhost:8080")
     @RequestMapping(value = "/gomoku/getnextmove", method = RequestMethod.POST)
     @ResponseBody
     public GomokuGameDTO getNextAction(@RequestBody GomokuGameDTO receivedDTO){
+
         List<GomokuActionDTO>  historyActionsDTO = receivedDTO.getHistoryActionsDTO();
         int requiredPlayer = receivedDTO.getRequiredPlayer();
         GomokuStateDTO stateDTO = receivedDTO.getStateDTO();
@@ -43,11 +46,17 @@ public class GomokuController {
         for(GomokuActionDTO action : historyActionsDTO){
             historyActions.addLast(GomokuAction.valueOfDTO(action));
         }
-        GomokuGameDTO gameDTO = service.getNextAction(state, historyActions, requiredPlayer, timestep);
+        DebugInfo debugInfo = null;
+        if(receivedDTO.isDebugMode()){
+            debugInfo = receivedDTO.getDebugInfo();
+            LOG.info(String.format("Debug Info : AB depth %d; TSS depth %d, timeLimit %d",
+                    debugInfo.getAbDepth(), debugInfo.getTssDepth(), debugInfo.getTimeLimit()));
+        }
+        GomokuGameDTO gameDTO = service.getNextAction(state, historyActions, requiredPlayer, timestep, debugInfo);
         return gameDTO;
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @CrossOrigin(origins = "http://localhost:8080")
     @RequestMapping(value = "/gomoku/startgame", method = RequestMethod.GET)
     @ResponseBody
     public GeneralResponseDTO startGame(@RequestParam(value="aiPlayer") int aiPlayer){
@@ -58,7 +67,7 @@ public class GomokuController {
         return responseDTO;
     }
 
-    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @CrossOrigin(origins = "http://localhost:8080")
     @RequestMapping(value = "/gomoku/endgame", method = RequestMethod.POST)
     @ResponseBody
     public GeneralResponseDTO endGame(){

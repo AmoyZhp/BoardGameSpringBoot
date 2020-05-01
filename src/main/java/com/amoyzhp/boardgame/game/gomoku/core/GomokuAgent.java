@@ -1,5 +1,6 @@
 package com.amoyzhp.boardgame.game.gomoku.core;
 
+import com.amoyzhp.boardgame.dto.gomoku.DebugInfo;
 import com.amoyzhp.boardgame.game.gomoku.policy.MixPolicy;
 import com.amoyzhp.boardgame.game.gomoku.policy.RandomPolicy;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
@@ -27,7 +28,7 @@ public class GomokuAgent implements Agent {
         this.mixPolicy = new MixPolicy();
     }
 
-    public Action act(State state, int timestep) {
+    public Action act(State state, int timestep, DebugInfo debugInfo) {
         if(timestep == 0 || timestep == 1){
             if(player == GomokuPlayer.BLACK.getValue()){
                 return new GomokuAction(new Position(7,7),GomokuPlayer.BLACK);
@@ -39,8 +40,11 @@ public class GomokuAgent implements Agent {
                 }
             }
         } else {
-            return this.act(state);
+            return this.act(state, debugInfo);
         }
+    }
+    public Action act(State state, DebugInfo debugInfo) {
+        return this.mixPolicy.getAction(state, GomokuPlayer.paraseValue(player), debugInfo);
     }
 
     @Override

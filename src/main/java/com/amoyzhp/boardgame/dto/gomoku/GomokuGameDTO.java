@@ -17,4 +17,6 @@ public class GomokuGameDTO {
     private GomokuActionDTO lastActionDTO;
     private int timestep;
     private int requiredPlayer;
+    private boolean debugMode;
+    private DebugInfo debugInfo;
 }
