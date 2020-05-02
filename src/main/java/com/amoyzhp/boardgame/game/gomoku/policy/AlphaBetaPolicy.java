@@ -3,8 +3,6 @@ package com.amoyzhp.boardgame.game.gomoku.policy;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuActionsGenerator;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuEvaluator;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuSimulator;
-import com.amoyzhp.boardgame.game.gomoku.constant.GameConst;
-import com.amoyzhp.boardgame.game.gomoku.core.GomokuAction;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.policy.Policy;
 import com.amoyzhp.boardgame.game.model.common.Player;
@@ -77,9 +75,13 @@ public class AlphaBetaPolicy implements Policy {
         logger.info("ab depth is " + depth);
         logger.info("time limit" + this.timeLimit);
         for(Action act : candidateActions){
+            int hash = this.simulator.getGameState().hashCode();
             this.simulator.step(act);
             int temp = this.alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, player.getValue());
             this.simulator.moveBack();
+            if(hash != this.simulator.getGameState().hashCode()){
+                logger.info("zobrist hash code error");
+            }
             selectedActionNodes.add(new ActionNode(act, temp));
         }
 

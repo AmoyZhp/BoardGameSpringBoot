@@ -111,6 +111,7 @@ public class ThreatSpaceSearch implements Policy {
             // 轮到算法调用方行棋
             List<Action> actions = this.actionsGenerator.getTSSCandidateActions(this.simulator, actingPlayer);
             for(Action action : actions){
+                int hash = this.simulator.getGameState().hashCode();
                 this.simulator.step(action);
                 List<Action> killActions = this.actionsGenerator.getKillAction(this.simulator, actingPlayer);
                 List<Action> defenseActions = this.actionsGenerator.getKillAction(this.simulator,
@@ -124,6 +125,9 @@ public class ThreatSpaceSearch implements Policy {
                     find = true;
                 }
                 this.simulator.moveBack();
+                if(hash != this.simulator.getGameState().hashCode()){
+                    logger.info("zobrist hash code error");
+                }
                 if(find){
                     logger.info("search tree depth is " + depth + " player is " + player.getValue());
                     return true;
