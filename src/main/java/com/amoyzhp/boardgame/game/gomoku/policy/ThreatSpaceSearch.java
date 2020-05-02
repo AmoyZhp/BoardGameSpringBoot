@@ -11,8 +11,10 @@ import com.amoyzhp.boardgame.game.model.policy.Policy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 胁迫搜索
@@ -30,6 +32,7 @@ public class ThreatSpaceSearch implements Policy {
     private GomokuActionsGenerator actionsGenerator;
     private GomokuSimulator simulator;
     private LinkedList<Action> result;
+    private Map<Integer, Boolean> translationTable;
 
     private long beginTime;
     private long currentTime;
@@ -38,6 +41,7 @@ public class ThreatSpaceSearch implements Policy {
     public ThreatSpaceSearch(){
         this.actionsGenerator = new GomokuActionsGenerator();
         this.simulator = null;
+        this.translationTable = new HashMap<>(10000);
     }
 
     public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
@@ -57,6 +61,7 @@ public class ThreatSpaceSearch implements Policy {
         } else {
             this.timeLimit = timeLimit;
         }
+        this.translationTable.clear();
 
         this.beginTime = System.currentTimeMillis();
         this.simulator = simulator;
@@ -113,16 +118,22 @@ public class ThreatSpaceSearch implements Policy {
             for(Action action : actions){
                 int hash = this.simulator.getGameState().hashCode();
                 this.simulator.step(action);
-                List<Action> killActions = this.actionsGenerator.getKillAction(this.simulator, actingPlayer);
-                List<Action> defenseActions = this.actionsGenerator.getKillAction(this.simulator,
-                        nextPlayer);
-                // 如果我方有必胜行动，并且对方没有必胜行动，则对方只能进行防守
-                // 假设对方无论采取什么行动，都无法消除所有必胜行动
-                // 则我方必胜
-                if(killActions.size() >= 1 && defenseActions.size() == 0 &&
-                        this.threatSpaceSearch(nextPlayer, player, depth-1)){
-                    this.result.addFirst(action);
-                    find = true;
+                if(translationTable.containsKey(this.simulator.getGameState().hashCode())){
+                    find = translationTable.get(this.simulator.getGameState().hashCode());
+                    logger.info(" tss translation table shot");
+                } else {
+                    List<Action> killActions = this.actionsGenerator.getKillAction(this.simulator, actingPlayer);
+                    List<Action> defenseActions = this.actionsGenerator.getKillAction(this.simulator,
+                            nextPlayer);
+                    // 如果我方有必胜行动，并且对方没有必胜行动，则对方只能进行防守
+                    // 假设对方无论采取什么行动，都无法消除所有必胜行动
+                    // 则我方必胜
+                    if(killActions.size() >= 1 && defenseActions.size() == 0 &&
+                            this.threatSpaceSearch(nextPlayer, player, depth-1)){
+                        this.result.addFirst(action);
+                        find = true;
+                    }
+                    translationTable.put(this.simulator.getGameState().hashCode(), find);
                 }
                 this.simulator.moveBack();
                 if(hash != this.simulator.getGameState().hashCode()){
@@ -152,12 +163,19 @@ public class ThreatSpaceSearch implements Policy {
 
             for(Action action : defenseActions){
                 this.simulator.step(action);
-                List<Action> killActions = this.actionsGenerator.getKillAction(this.simulator, player);
-                if(killActions.size() == 0 && this.threatSpaceSearch(nextPlayer,player, depth - 1) == false){
-                    find = false;
+                if(translationTable.containsKey(this.simulator.getGameState().hashCode())){
+                    find = translationTable.get(this.simulator.getGameState().hashCode());
+                    logger.info(" tss translation table shot");
                 } else {
-                    find = true;
+                    List<Action> killActions = this.actionsGenerator.getKillAction(this.simulator, player);
+                    if(killActions.size() == 0 && this.threatSpaceSearch(nextPlayer,player, depth - 1) == false){
+                        find = false;
+                    } else {
+                        find = true;
+                    }
+                    translationTable.put(this.simulator.getGameState().hashCode(), find);
                 }
+
                 this.simulator.moveBack();
                 if(find == false){
                     // 对方有一个行动可以阻止我方必胜

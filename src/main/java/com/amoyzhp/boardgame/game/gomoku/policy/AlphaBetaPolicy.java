@@ -13,7 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * implementaion of alpha beta tree search in gomoku
@@ -35,6 +37,8 @@ public class AlphaBetaPolicy implements Policy {
 
     private GomokuEvaluator evaluator;
 
+    private Map<Integer, Integer> translationTable;
+
     private long beginTime;
     private long currentTime;
     private long timeLimit;
@@ -42,6 +46,7 @@ public class AlphaBetaPolicy implements Policy {
     public AlphaBetaPolicy(){
         this.moveGenerator = new GomokuActionsGenerator();
         this.evaluator = new GomokuEvaluator();
+        this.translationTable = new HashMap<>();
     }
 
     public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
@@ -61,6 +66,7 @@ public class AlphaBetaPolicy implements Policy {
 
         this.beginTime = System.currentTimeMillis();
 
+        this.translationTable = new HashMap<>((int)Math.pow(10, depth));
         this.simulator = simulator;
         int initStateHashcode = simulator.getGameState().hashCode();
         Action action = null;
@@ -115,7 +121,13 @@ public class AlphaBetaPolicy implements Policy {
                 GomokuPlayer.paraseValue(player));
         for(Action action : candidateActions){
             this.simulator.step(action);
-            int temp = alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, requiredPlayer);
+            int temp = this.translationTable.getOrDefault(this.simulator.getGameState().hashCode(), -1);
+            if(temp == -1){
+                temp = alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, requiredPlayer);
+                this.translationTable.put(this.simulator.getGameState().hashCode(), temp);
+            } else {
+                logger.info(" translation table shot");
+            }
             this.simulator.moveBack();
             if(requiredPlayer == player){
                 alpha = Math.max(temp, alpha);
