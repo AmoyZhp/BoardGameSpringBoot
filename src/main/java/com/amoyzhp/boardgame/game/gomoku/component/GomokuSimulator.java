@@ -42,6 +42,11 @@ public class GomokuSimulator implements Simulator {
             // 该方法会更新和 (row, col) 点相关的路上的信息
             this.roadBoard.updateRoad(position, player);
             this.historyActions.addLast(action);
+            if(this.state.getEmptyPos().size() == 0 || this.roadBoard.getRoads(player, 5).size() > 0){
+                this.state.setTerminal(true);
+            } else {
+                this.state.setTerminal(false);
+            }
         }
 
     }
@@ -51,5 +56,10 @@ public class GomokuSimulator implements Simulator {
         Position position = action.getPositions().get(0);
         this.state.updateState(position, GomokuPlayer.EMPTY);
         this.roadBoard.updateRoad(position, GomokuPlayer.EMPTY);
+        if(this.state.getEmptyPos().size() > 0 && this.roadBoard.getRoads(action.getPlayer(), 5).size() == 0
+            && this.roadBoard.getRoads(GomokuPlayer.getNextPlayer(action.getPlayer().getValue()),
+                5).size() == 0){
+            this.state.setTerminal(false);
+        }
     }
 }

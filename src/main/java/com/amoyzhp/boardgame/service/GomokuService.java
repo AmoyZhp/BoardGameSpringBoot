@@ -30,9 +30,7 @@ public class GomokuService {
                                        int requiredPlayer, int timestep, DebugInfo debugInfo) {
         GomokuAgent agent = new GomokuAgent(GomokuPlayer.paraseValue(requiredPlayer));
         GomokuEnvironment env = new GomokuEnvironment();
-
         env.init(state, historyActions, timestep);
-
         // 获取下一个行动和状态
         Action action = agent.act(state, timestep, debugInfo);
         State nextState = env.step(action);

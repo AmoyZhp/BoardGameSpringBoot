@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * gomoku state
@@ -27,6 +29,7 @@ public class GomokuState implements State {
 
     private int width;
     private int height;
+    private Set<Position> emptyPos;
     private boolean terminal;
     private int[][] chessboard;
     private int[][][] zobrisHashBoard;
@@ -40,6 +43,7 @@ public class GomokuState implements State {
         this.height = height;
         this.chessboard = new int[height][width];
         this.zobrisHashBoard = new int[height][width][3];
+        this.emptyPos = new HashSet<>();
         int[][][] temp = this.readZorbistHashBoard("./data/zorbist_hash_borad.data");
         this.hashval = 0;
         for(int i = 0; i < this.chessboard.length; i++){
@@ -53,19 +57,17 @@ public class GomokuState implements State {
         this.reset();
 
     }
-
-    public void setTerminal(boolean terminal){
-        this.terminal = terminal;
-    }
-
     public static GomokuState valueOfDTO(GomokuStateDTO dto){
         int[][] temp = dto.getChessboard();
         GomokuState state = new GomokuState(temp.length, temp.length);
         for(int i = 0; i < temp.length; i++){
             for(int j = 0; j < temp[i].length; j++){
-                state.updateState(new Position(i,j), GomokuPlayer.paraseValue(temp[i][j]));
+                if(temp[i][j] != GomokuPlayer.EMPTY.getValue()){
+                    state.updateState(new Position(i,j), GomokuPlayer.paraseValue(temp[i][j]));
+                }
             }
         }
+        state.setTerminal(dto.isTerminal());
         return state;
     }
 
@@ -80,22 +82,37 @@ public class GomokuState implements State {
                 // 将原本位置上的值异或
                 // 新值等同于该位置为 EMPTY 的值
                 this.hashval ^= this.zobrisHashBoard[row][col][this.chessboard[row][col]];
+                this.emptyPos.add(position);
             } else {
+                // 该形式表示是落下一个子
                 this.hashval ^= this.zobrisHashBoard[row][col][playerVal];
+                this.emptyPos.remove(position);
             }
-
             this.chessboard[position.row()][position.col()] = player.getValue();
             return true;
         }
-
+        logger.debug(String.format("invalid operation (row %d , col %d), matched board pos is %d, acting player is %d",
+                position.row(), position.col(),
+                this.chessboard[position.row()][position.col()], player.getValue()) );
         return false;
+    }
+
+    @Override
+    public Player getPlayerOnPos(Position position) {
+        if(this.isLegalPos(position)){
+            return GomokuPlayer.paraseValue(this.chessboard[position.row()][position.col()]);
+        } else {
+            return null;
+        }
     }
 
     @Override
     public void reset() {
         this.hashval = 0;
+        this.emptyPos.clear();
         for(int i = 0; i < this.chessboard.length; i++){
             for(int j = 0; j < this.chessboard[i].length; j++){
+                this.emptyPos.add(new Position(i,j));
                 this.chessboard[i][j] = GomokuPlayer.EMPTY.getValue();
                 this.hashval ^= zobrisHashBoard[i][j][0];
             }
@@ -114,11 +131,20 @@ public class GomokuState implements State {
     }
 
     @Override
+    public void setTerminal(boolean terminal){
+        this.terminal = terminal;
+    }
+
+    @Override
+    public Set<Position> getEmptyPos() {
+        return this.emptyPos;
+    }
+
+    @Override
     public boolean isLegalPos(Position position, Player player) {
         int row = position.row();
         int col = position.col();
-        if(row < 0 || row >= this.height || col < 0 || col >= this.width){
-            logger.debug(String.format("index out of range : row %d , col %d", row,col));
+        if(isLegalPos(position) == false){
             return false;
         }
         if(player.getValue() == GomokuPlayer.EMPTY.getValue()
@@ -126,7 +152,15 @@ public class GomokuState implements State {
             return  true;
         }
         if(this.chessboard[row][col] != GomokuPlayer.EMPTY.getValue()){
-            logger.debug(String.format("pos in not empty : row %d , col %d, player %d", row,col,player.getValue()));
+            return false;
+        }
+        return true;
+    }
+
+    public boolean isLegalPos(Position position) {
+        int row = position.row();
+        int col = position.col();
+        if(row < 0 || row >= this.height || col < 0 || col >= this.width){
             return false;
         }
         return true;
@@ -189,5 +223,20 @@ public class GomokuState implements State {
         } catch (IOException ex){
             return null;
         }
+    }
+
+    public static GomokuState copyState(State state){
+        GomokuState copyState = new GomokuState(state.getHeight(), state.getWidth());
+        int[][] oldBoard = state.getChessboard();
+        for(int i = 0; i < oldBoard.length; i++){
+            for(int j = 0 ; j < oldBoard[i].length; j++){
+                if(oldBoard[i][j] != GomokuPlayer.EMPTY.getValue()){
+                    copyState.updateState(new Position(i,j), GomokuPlayer.paraseValue(oldBoard[i][j]));
+                }
+
+            }
+        }
+        copyState.setTerminal(state.isTerminal());
+        return copyState;
     }
 }

@@ -31,6 +31,9 @@ public class MixPolicy implements Policy {
     private GomokuSimulator simulator;
     private AlphaBetaPolicy alphaBetaPolicy;
     private ThreatSpaceSearch threatSpaceSearch;
+    private MonteCarloTreeSearch mcts;
+
+    private ConcurrentAlphaBetaPolicy concurrentAlphaBetaPolicy;
 
     private long timeLimit;
     private long beginTime;
@@ -41,6 +44,8 @@ public class MixPolicy implements Policy {
         this.actionsGenerator = new GomokuActionsGenerator();
         this.alphaBetaPolicy = new AlphaBetaPolicy();
         this.threatSpaceSearch = new ThreatSpaceSearch();
+        this.concurrentAlphaBetaPolicy = new ConcurrentAlphaBetaPolicy();
+        this.mcts = new MonteCarloTreeSearch();
     }
 
     public Action getAction(State state, Player player){
@@ -103,6 +108,7 @@ public class MixPolicy implements Policy {
                 this.timeLimit = Math.max(0, this.timeLimit - (currentTime - beginTime));
             }
             action = this.alphaBetaPolicy.getAction(simulator, currentPlayer, debugInfo.getAbDepth(), this.timeLimit);
+//            action = this.mcts.getAction(simulator, currentPlayer);
         } else {
 
             // 判断我方可否通过 TSS 获胜
@@ -120,6 +126,7 @@ public class MixPolicy implements Policy {
             // 上述都无法找到理想点的话
             // 使用 alpha-beta 剪枝
             action = this.alphaBetaPolicy.getAction(simulator, currentPlayer);
+//            action = this.mcts.getAction(simulator, currentPlayer);
         }
 
 

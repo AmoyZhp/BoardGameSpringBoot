@@ -42,6 +42,18 @@ public enum GomokuPlayer implements Player {
         }
     }
 
+    public static GomokuPlayer getNextPlayer(Player player){
+        if(player.getValue() == WHITE.getValue()){
+            return BLACK;
+        } else if(player.getValue() == BLACK.getValue()){
+            return WHITE;
+        } else {
+            return ILLEGAL;
+        }
+    }
+
+
+
     public int getValue() {
         return this.value;
     }

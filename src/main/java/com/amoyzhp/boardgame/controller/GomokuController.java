@@ -27,15 +27,15 @@ import java.util.List;
 
 @Controller
 public class GomokuController {
-    private static final Logger LOG = LoggerFactory.getLogger(GomokuController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GomokuController.class);
     @Autowired
     private GomokuService service;
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = "/gomoku/getnextmove", method = RequestMethod.POST)
     @ResponseBody
     public GomokuGameDTO getNextAction(@RequestBody GomokuGameDTO receivedDTO){
-
+        logger.info("------request action begin------");
         List<GomokuActionDTO>  historyActionsDTO = receivedDTO.getHistoryActionsDTO();
         int requiredPlayer = receivedDTO.getRequiredPlayer();
         GomokuStateDTO stateDTO = receivedDTO.getStateDTO();
@@ -49,14 +49,15 @@ public class GomokuController {
         DebugInfo debugInfo = null;
         if(receivedDTO.isDebugMode()){
             debugInfo = receivedDTO.getDebugInfo();
-            LOG.info(String.format("Debug Info : AB depth %d; TSS depth %d, timeLimit %d",
+            logger.info(String.format("Debug Info : AB depth %d; TSS depth %d, timeLimit %d",
                     debugInfo.getAbDepth(), debugInfo.getTssDepth(), debugInfo.getTimeLimit()));
         }
         GomokuGameDTO gameDTO = service.getNextAction(state, historyActions, requiredPlayer, timestep, debugInfo);
+        logger.info("------request action end------");
         return gameDTO;
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = "/gomoku/startgame", method = RequestMethod.GET)
     @ResponseBody
     public GeneralResponseDTO startGame(@RequestParam(value="aiPlayer") int aiPlayer){
@@ -67,7 +68,7 @@ public class GomokuController {
         return responseDTO;
     }
 
-    @CrossOrigin(origins = "http://localhost:8080")
+    @CrossOrigin(origins = "*")
     @RequestMapping(value = "/gomoku/endgame", method = RequestMethod.POST)
     @ResponseBody
     public GeneralResponseDTO endGame(){

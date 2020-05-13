@@ -2,6 +2,7 @@ package com.amoyzhp.boardgame.game.gomoku.component;
 
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Direction;
+import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.common.Position;
 import javafx.geometry.Pos;
 import org.slf4j.Logger;
@@ -65,6 +66,15 @@ public class RoadBoard {
         }
     }
 
+    public Set<Road> getRoads(Player player, int stoneCnt){
+        // 返回有 blackCnt 个黑子， whiteCnt 个白子的路。
+        if(player.getValue() == GomokuPlayer.BLACK.getValue()){
+            return this.getRoads(stoneCnt, 0);
+        } else if (player.getValue() == GomokuPlayer.WHITE.getValue()){
+            return this.getRoads(0, stoneCnt);
+        }
+        return null;
+    }
     public Set<Road> getRoads(int blackCnt, int whiteCnt){
         // 返回有 blackCnt 个黑子， whiteCnt 个白子的路。
         return this.roadsStatus.get(blackCnt).get(whiteCnt);

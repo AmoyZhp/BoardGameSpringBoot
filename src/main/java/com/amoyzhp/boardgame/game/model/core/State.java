@@ -4,6 +4,7 @@ import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.common.Position;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * game state interface
@@ -15,9 +16,15 @@ public interface State {
 
     boolean updateState(Position positions, Player player);
 
+    Player getPlayerOnPos(Position position);
+
     void reset();
 
     boolean isTerminal();
+
+    void setTerminal(boolean terminal);
+
+    Set<Position> getEmptyPos();
 
     boolean isLegalPos(Position position, Player player);
 

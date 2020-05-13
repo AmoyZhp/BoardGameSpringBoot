@@ -57,11 +57,9 @@ public class AlphaBetaPolicy implements Policy {
         if(depth <= 0){
             depth = 1;
         }
+        this.timeLimit = timeLimit;
         if(this.timeLimit < 0){
             this.timeLimit = -1;
-        }
-        else {
-            this.timeLimit = timeLimit;
         }
 
         this.beginTime = System.currentTimeMillis();
@@ -126,7 +124,7 @@ public class AlphaBetaPolicy implements Policy {
                 temp = alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, requiredPlayer);
                 this.translationTable.put(this.simulator.getGameState().hashCode(), temp);
             } else {
-                logger.info(" translation table shot");
+//                logger.info(" translation table shot");
             }
             this.simulator.moveBack();
             if(requiredPlayer == player){

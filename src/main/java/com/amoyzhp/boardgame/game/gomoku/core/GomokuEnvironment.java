@@ -1,5 +1,7 @@
 package com.amoyzhp.boardgame.game.gomoku.core;
 
+import com.amoyzhp.boardgame.game.gomoku.component.GomokuEvaluator;
+import com.amoyzhp.boardgame.game.gomoku.component.RoadBoard;
 import com.amoyzhp.boardgame.game.gomoku.constant.GameConst;
 import com.amoyzhp.boardgame.game.model.common.Position;
 import com.amoyzhp.boardgame.game.model.core.Environment;
@@ -21,12 +23,14 @@ public class GomokuEnvironment implements Environment {
     private State state;
     private int timestep;
     private LinkedList<Action> historyActions;
+    private GomokuEvaluator evaluator;
 
 
     public void init(State state, LinkedList<Action> historyActions , int timestep){
         this.state = state;
         this.historyActions = historyActions;
         this.timestep = timestep;
+        this.evaluator = new GomokuEvaluator();
     }
 
     public void reset() {
@@ -46,6 +50,10 @@ public class GomokuEnvironment implements Environment {
     public State step(Action action) {
         for(Position position : action.getPositions()){
             this.state.updateState(position, action.getPlayer());
+        }
+        if(this.state.getEmptyPos().size() == 0 || this.evaluator.isTerminal(state, action)){
+            this.state.setTerminal(true);
+            System.out.println("terminal");
         }
         this.timestep += 1;
         this.historyActions.addLast(action);

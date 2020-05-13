@@ -4,6 +4,7 @@ import com.amoyzhp.boardgame.game.gomoku.core.GomokuAction;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Position;
 import com.amoyzhp.boardgame.game.model.core.Action;
+import com.amoyzhp.boardgame.game.model.core.State;
 
 import java.util.*;
 
@@ -106,6 +107,22 @@ public class GomokuActionsGenerator {
         List<Action> actions = new LinkedList<>();
         for(Position position : positions){
             actions.add(new GomokuAction(position, player));
+        }
+        return actions;
+    }
+
+    public List<Action> getMCTSCandidateActions(RoadBoard roadBoard, GomokuPlayer player) {
+        List<Action> actions = new ArrayList<>();
+        Set<Position> positions = null;
+        GomokuPlayer nextPlayer = GomokuPlayer.getNextPlayer(player.getValue());
+        positions = roadBoard.getEmptyPosOnRoad(3, player);
+        positions.addAll(roadBoard.getEmptyPosOnRoad(2,player));
+        positions.addAll(roadBoard.getEmptyPosOnRoad(3, nextPlayer));
+        positions.addAll(roadBoard.getEmptyPosOnRoad(2, nextPlayer));
+        positions = roadBoard.getEmptyPosOnRoad(1, player);
+        if (positions.size() > 0){
+            actions = this.posToAction(positions, player);
+            return  actions;
         }
         return actions;
     }
