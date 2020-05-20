@@ -2,15 +2,13 @@ package com.amoyzhp.boardgame.game.gomoku.policy;
 
 
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuActionsGenerator;
-import com.amoyzhp.boardgame.game.gomoku.component.GomokuEvaluator;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuSimulator;
-import com.amoyzhp.boardgame.game.gomoku.component.GomokuSimulatorLight;
 import com.amoyzhp.boardgame.game.gomoku.core.GomokuState;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Player;
-import com.amoyzhp.boardgame.game.model.component.Simulator;
 import com.amoyzhp.boardgame.game.model.core.Action;
 import com.amoyzhp.boardgame.game.model.core.State;
+import com.amoyzhp.boardgame.game.model.policy.TreeSearchPolicy;
 
 import java.util.*;
 
@@ -20,27 +18,26 @@ import java.util.*;
  * @Author: Tuseday Boy
  * @CreatedDate: 2020/05/03
  */
-public class MonteCarloTreeSearch {
+public class MonteCarloTreeSearch implements TreeSearchPolicy {
 
     private final long MAX_TIME_LIMIT = 5 * 1000; // 5000 ms  = 5s
 
     // timeLimit = -1 表示没有限时
     private final long DEFAULT_TIME_LIMIT = -1;
 
-    private final int DEFAULT_SIMULATION_COUNT = 1600;
+    private final int DEFAULT_SIMULATION_COUNT = 3200;
 
-    private final int MAX_SIMULATION_COUNT = 1600;
+    private final int MAX_SIMULATION_COUNT = 3200;
 
     private long timeLimit;
     private int simulationCount;
 
     private GomokuActionsGenerator actionsGenerator;
-
     private RandomPolicy randomPolicy;
 
-    public MonteCarloTreeSearch(){
-        this.actionsGenerator = new GomokuActionsGenerator();
-        this.randomPolicy = new RandomPolicy();
+    public MonteCarloTreeSearch(GomokuActionsGenerator actionsGenerator, RandomPolicy randomPolicy){
+        this.actionsGenerator = actionsGenerator;
+        this.randomPolicy = randomPolicy;
     }
 
     public TreeNode selection(TreeNode root){
@@ -50,15 +47,15 @@ public class MonteCarloTreeSearch {
         return root;
     };
 
-    public TreeNode expansion(TreeNode parent, GomokuPlayer player){
+    public TreeNode expansion(TreeNode parent, Player player){
         // 需要先利用 simulator 的路数组选点
         GomokuSimulator simulator = new GomokuSimulator(GomokuState.copyState(parent.getState()));
-        GomokuPlayer actingPlayer = parent.getPlayer();
-        GomokuPlayer nextPlayer = GomokuPlayer.getNextPlayer(player);
+        Player actingPlayer = parent.getPlayer();
+        Player nextPlayer = GomokuPlayer.getNextPlayer(player);
 
-        List<Action> actionList = actionsGenerator.getKillAction(simulator, actingPlayer);
+        List<Action> actionList = actionsGenerator.getKillAction(simulator.getRoadBoard(), actingPlayer);
         if(actionList.size() == 0){
-            actionList= actionsGenerator.getKillAction(simulator, nextPlayer);
+            actionList= actionsGenerator.getKillAction(simulator.getRoadBoard(), nextPlayer);
         }
 
         if(actionList.size() == 0){
@@ -67,7 +64,7 @@ public class MonteCarloTreeSearch {
 
         List<TreeNode> children = new ArrayList<>(actionList.size());
         // 因为不需要路这么复杂的结构了所以使用 light sim
-        GomokuSimulatorLight lightSim = new GomokuSimulatorLight(GomokuState.copyState(parent.getState()));
+        GomokuSimulator lightSim = new GomokuSimulator(GomokuState.copyState(parent.getState()), false);
         for(Action action : actionList){
             lightSim.step(action);
             State nextState = GomokuState.copyState(simulator.getGameState());
@@ -91,23 +88,23 @@ public class MonteCarloTreeSearch {
 
     }
 
-    public int simulation(TreeNode node, GomokuPlayer player){
+    public int simulation(TreeNode node, Player player){
         if(node.getWin() != 0){
             // 说明该节点是一个终局节点
             return node.getWin();
         }
-        GomokuSimulatorLight simulator = new GomokuSimulatorLight(GomokuState.copyState(node.getState()));
-        GomokuPlayer actingPlayer = node.getPlayer();
+        GomokuSimulator simLight = new GomokuSimulator(GomokuState.copyState(node.getState()), false);
+        Player actingPlayer = node.getPlayer();
 
-        while (simulator.getGameState().isTerminal() == false){
-            Action action = randomPolicy.getAction(simulator.getGameState(), actingPlayer);
-            simulator.step(action);
+        while (simLight.getGameState().isTerminal() == false){
+            Action action = randomPolicy.getAction(simLight.getGameState(), actingPlayer);
+            simLight.step(action);
             actingPlayer = GomokuPlayer.getNextPlayer(actingPlayer);
         }
         int win = 0;
-        if(simulator.getGameState().getEmptyPos().size() == 0){
+        if(simLight.getGameState().getEmptyPos().size() == 0){
             win = 0;
-        } else if(simulator.getLastAction().getPlayer().getValue() == player.getValue()){
+        } else if(simLight.getHistoryActions().getLast().getPlayer().equals(player)){
             win = 1;
         } else {
             win = -1;
@@ -119,11 +116,11 @@ public class MonteCarloTreeSearch {
         node.backpropagationUpdate(win);
     }
 
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
-        return this.getAction(simulator, player,  DEFAULT_TIME_LIMIT, DEFAULT_SIMULATION_COUNT);
+    public Action getAction(State state, Player player){
+        return this.getAction(state, player, DEFAULT_SIMULATION_COUNT, DEFAULT_TIME_LIMIT);
     }
-
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player, long timeLimit, int simulationCount){
+    @Override
+    public Action getAction(State state, Player player,int simulationCount, long timeLimit){
         this.timeLimit = timeLimit;
         if(this.timeLimit < 0 ){
             // timeLimit = -1 表示没有限时
@@ -131,42 +128,46 @@ public class MonteCarloTreeSearch {
         } else {
             this.timeLimit = Math.max(MAX_TIME_LIMIT, this.timeLimit);
         }
-        this.simulationCount = simulationCount;
-        if(this.simulationCount < 0){
-            this.simulationCount = DEFAULT_SIMULATION_COUNT;
-        } else {
-            this.simulationCount = Math.max(MAX_SIMULATION_COUNT, this.simulationCount);
-        }
+        GomokuSimulator simulator = new GomokuSimulator(state);
+        this.simulationCount = simulationCount < 0 ? DEFAULT_SIMULATION_COUNT : Math.max(MAX_SIMULATION_COUNT, this.simulationCount) ;
         TreeNode root = new TreeNode(simulator.getGameState(), player,null,null, 0);
         for(int i = 0; i < this.simulationCount; i++){
             TreeNode selctionNode = this.selection(root);
-            TreeNode expansionNode = this.expansion(selctionNode, player);
+            // 如果当前选择的节点还未被访问，则不进行扩展
+            TreeNode expansionNode = selctionNode.getVisitCnt() == 0 ? selctionNode : this.expansion(selctionNode, player);
             int val = this.simulation(expansionNode, player);
             this.backpropagation(expansionNode, val);
         }
-        TreeNode child = root.getHighestChild();
-
-        return child.getActionPathFromParent();
+        double maxVal = 0;
+        TreeNode res = null;
+        for(TreeNode node : root.children){
+            double val = node.winCnt * 1.0 / node.visitCnt * 1.0;
+            if(val > maxVal){
+                maxVal = val;
+                res = node;
+            }
+        }
+        return res.actionPathFromParent;
     }
 
     private class TreeNode{
 
-        private PriorityQueue<TreeNode> children;
-        private double val;
-        private Action actionPathFromParent;
-        private TreeNode parent;
+        public PriorityQueue<TreeNode> children;
+        public double val;
+        public Action actionPathFromParent;
+        public TreeNode parent;
         // 当前状态下，下一个行动的玩家
-        private GomokuPlayer player;
-        private State state;
-        private int visitCnt;
-        private int winCnt;
+        public Player player;
+        public State state;
+        public int visitCnt;
+        public int winCnt;
         // 标记该点是否有获胜者
         // 0 表示没有
         // 1 表示调用方获胜
         // -1 表示调用方对手获胜
-        private int win;
+        public int win;
 
-        public TreeNode(State gameState, GomokuPlayer player, Action action,  TreeNode parent, int win) {
+        public TreeNode(State gameState, Player player, Action action,  TreeNode parent, int win) {
             this.state = gameState;
             this.actionPathFromParent = action;
             this.player = player;
@@ -220,7 +221,7 @@ public class MonteCarloTreeSearch {
             return parent;
         }
 
-        public GomokuPlayer getPlayer(){
+        public Player getPlayer(){
             return this.player;
         }
 

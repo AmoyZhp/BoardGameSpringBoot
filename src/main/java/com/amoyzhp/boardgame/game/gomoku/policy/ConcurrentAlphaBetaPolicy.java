@@ -8,13 +8,12 @@ import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.core.Action;
 import com.amoyzhp.boardgame.game.model.core.State;
-import com.amoyzhp.boardgame.game.model.policy.Policy;
+import com.amoyzhp.boardgame.game.model.policy.TreeSearchPolicy;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -28,7 +27,7 @@ import java.util.concurrent.FutureTask;
  * @Author: Tuseday Boy
  * @CreatedDate: 2020/05/13
  */
-public class ConcurrentAlphaBetaPolicy  implements Policy {
+public class ConcurrentAlphaBetaPolicy  implements TreeSearchPolicy {
 
     private final int DEFAULT_DEPTH = 1;
     // -1 就是没有限制
@@ -36,7 +35,7 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
 
     final Logger logger = LoggerFactory.getLogger(ConcurrentAlphaBetaPolicy.class);
 
-    private GomokuActionsGenerator moveGenerator;
+    private GomokuActionsGenerator actionsGenerator;
 
     private GomokuSimulator simulator;
 
@@ -48,16 +47,18 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
     private volatile long currentTime;
     private long timeLimit;
 
-    public ConcurrentAlphaBetaPolicy() {
-        this.moveGenerator = new GomokuActionsGenerator();
-        this.evaluator = new GomokuEvaluator();
+    public ConcurrentAlphaBetaPolicy(GomokuActionsGenerator actionsGenerator, GomokuEvaluator evaluator) {
+        this.actionsGenerator = actionsGenerator;
+        this.evaluator = evaluator;
         this.translationTable = new ConcurrentHashMap<>();
     }
 
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
-        return this.getAction(simulator, player, this.DEFAULT_DEPTH, this.DEFAULT_TIME_LIMIT);
+    public Action getAction(State state, Player player){
+        return this.getAction(state, player, this.DEFAULT_DEPTH, this.DEFAULT_TIME_LIMIT);
     }
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player, int depth, long timeLimit){
+
+    @Override
+    public Action getAction(State state, Player player, int depth, long timeLimit){
         if(depth <= 0){
             depth = 1;
         }
@@ -65,13 +66,17 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
         if(this.timeLimit < 0){
             this.timeLimit = -1;
         }
-
+        if(this.simulator == null){
+            this.simulator = new GomokuSimulator(state);
+        } else {
+            this.simulator.setState(state);
+        }
         this.beginTime = System.currentTimeMillis();
-        this.simulator = simulator;
+
         int initStateHashcode = simulator.getGameState().hashCode();
         Action action = null;
         // 获取用来进行搜索的候选点
-        List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator, player);
+        List<Action> candidateActions = this.actionsGenerator.getAlphaBetaCandidateActions(this.simulator.getRoadBoard(), player);
         List<ActionNode> selectedActionNodes = new ArrayList<>(candidateActions.size());
         List<Future<ActionNode>> results = new ArrayList<>();
         logger.info("ab depth is " + depth);
@@ -104,17 +109,18 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
         return  action;
     }
 
+
     private class SubAlphaBetaTreeSearch implements Callable<ActionNode>{
 
         private GomokuSimulator simulator;
 
-        private GomokuPlayer player;
+        private Player player;
 
         private Action action;
 
         private int depth;
 
-        public SubAlphaBetaTreeSearch(GomokuSimulator simulator, GomokuPlayer player, Action action, int depth) {
+        public SubAlphaBetaTreeSearch(GomokuSimulator simulator, Player player, Action action, int depth) {
             this.simulator = new GomokuSimulator(GomokuState.copyState(simulator.getGameState()));
             this.player = player;
             this.action = action;
@@ -125,26 +131,26 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
         public ActionNode call() throws Exception {
             int beta = Integer.MAX_VALUE;
             int alpha = Integer.MIN_VALUE;
-            int nextPlayer = GomokuPlayer.getNextPlayer(player.getValue()).getValue();
-            int val = alphaBetaTreeSearch(alpha, beta, this.depth, nextPlayer, this.player.getValue());
+            Player nextPlayer = GomokuPlayer.getNextPlayer(player);
+            int val = alphaBetaTreeSearch(alpha, beta, this.depth, nextPlayer, this.player);
             return new ActionNode(action, val);
         }
 
-        public int alphaBetaTreeSearch(int alpha, int beta, int depth, int player, int requiredPlayer) {
+        public int alphaBetaTreeSearch(int alpha, int beta, int depth, Player player, Player requiredPlayer) {
             if(depth == 0){
-                return evaluator.evaluate(this.simulator.getRoadBoard(), GomokuPlayer.paraseValue(player));
+                return evaluator.evaluate(this.simulator.getRoadBoard(), player);
             }
             long currentTime;
             if(timeLimit >= 0){
                 currentTime = System.currentTimeMillis();
                 if(currentTime - beginTime >= timeLimit){
-                    return evaluator.evaluate(this.simulator.getRoadBoard(), GomokuPlayer.paraseValue(player));
+                    return evaluator.evaluate(this.simulator.getRoadBoard(), player);
                 }
             }
 
-            int nextPlayer = GomokuPlayer.getNextPlayer(player).getValue();
-            List<Action> candidateActions = moveGenerator.getAlphaBetaCandidateActions(this.simulator,
-                    GomokuPlayer.paraseValue(player));
+            Player nextPlayer = GomokuPlayer.getNextPlayer(player);
+            List<Action> candidateActions = actionsGenerator.getAlphaBetaCandidateActions(this.simulator.getRoadBoard(),
+                    player);
             for(Action action : candidateActions){
                 this.simulator.step(action);
                 int temp = translationTable.getOrDefault(this.simulator.getGameState().hashCode(), -1);
@@ -162,6 +168,7 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
                     }
                 } else {
                     beta = Math.min(temp, beta);
+
                     if(beta < alpha){
                         break;
                     }
@@ -175,15 +182,8 @@ public class ConcurrentAlphaBetaPolicy  implements Policy {
                 return beta;
             }
         }
-
-
     }
 
-
-    @Override
-    public Action getAction(State state, Player player) {
-        return null;
-    }
 
     @Data
     private class ActionNode {

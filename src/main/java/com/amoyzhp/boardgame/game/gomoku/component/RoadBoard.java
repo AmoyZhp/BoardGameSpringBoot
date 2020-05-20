@@ -68,9 +68,9 @@ public class RoadBoard {
 
     public Set<Road> getRoads(Player player, int stoneCnt){
         // 返回有 blackCnt 个黑子， whiteCnt 个白子的路。
-        if(player.getValue() == GomokuPlayer.BLACK.getValue()){
+        if(player.equals(GomokuPlayer.BLACK )){
             return this.getRoads(stoneCnt, 0);
-        } else if (player.getValue() == GomokuPlayer.WHITE.getValue()){
+        } else if (player.equals(GomokuPlayer.WHITE)){
             return this.getRoads(0, stoneCnt);
         }
         return null;
@@ -100,7 +100,7 @@ public class RoadBoard {
      * @param player 玩家
      * @return 更新是否成功
      */
-    public boolean updateRoad(Position position, GomokuPlayer player) {
+    public boolean updateRoad(Position position, Player player) {
         int row = position.row();
         int col = position.col();
         boolean flag = true;
@@ -116,13 +116,13 @@ public class RoadBoard {
                  // 先把路从旧的位置移除
                  roads =  this.getRoads(road.getBlackStoneCnt(), road.getWhiteStoneCnt());
                  roads.remove(road);
-                 if(player == GomokuPlayer.EMPTY){
+                 if(player.equals(GomokuPlayer.EMPTY)){
                     // 如果玩家为空，则表示要添加空白位置
                     road.removeStone(position);
                     roads = this.getRoads(road.getBlackStoneCnt(), road.getWhiteStoneCnt());
                     roads.add(road);
 
-                 } else if(player == GomokuPlayer.BLACK || player == GomokuPlayer.WHITE){
+                 } else if(player.equals(GomokuPlayer.BLACK) || player.equals(GomokuPlayer.WHITE)){
                      road.setStone(position, player);
                      roads = this.getRoads(road.getBlackStoneCnt(), road.getWhiteStoneCnt());
                      roads.add(road);
@@ -141,12 +141,12 @@ public class RoadBoard {
      * @param player
      * @return 空的位置的集合
      */
-    public Set<Position> getEmptyPosOnRoad(int i, GomokuPlayer player) {
+    public Set<Position> getEmptyPosOnRoad(int i, Player player) {
         if(i < 0 || i > 5 ){
             return null;
         }
         Set<Position> result = new HashSet<>();
-        if(player == GomokuPlayer.BLACK){
+        if(player.equals(GomokuPlayer.BLACK)){
             for(Road road : this.roadsStatus.get(i).get(0)){
                 result.addAll(road.getEmptyPoes());
             }
@@ -158,12 +158,12 @@ public class RoadBoard {
         return result;
     }
 
-    public Set<Position> getPosOnLiveThreeRoad(GomokuPlayer player) {
+    public Set<Position> getPosOnLiveThreeRoad(Player player) {
         Set<Position> result = new HashSet<>();
         Set<Road> threeRoads = new HashSet<>();
-        if(player == GomokuPlayer.BLACK){
+        if(player.equals(GomokuPlayer.BLACK)){
             threeRoads = this.getRoads(3, 0);
-        } else if (player == GomokuPlayer.WHITE){
+        } else if (player.equals(GomokuPlayer.WHITE)){
             threeRoads = this.getRoads(0,3);
         } else {
             logger.debug("invalid player type");
@@ -216,12 +216,12 @@ public class RoadBoard {
         return result;
     }
 
-    public Set<Position> getPosOnLiveTwoRoad(GomokuPlayer player) {
+    public Set<Position> getPosOnLiveTwoRoad(Player player) {
         Set<Position> result = new HashSet<>();
         Set<Road> twoRoads = new HashSet<>();
-        if(player == GomokuPlayer.BLACK){
+        if(player.equals(GomokuPlayer.BLACK)){
             twoRoads = this.getRoads(2, 0);
-        } else if (player == GomokuPlayer.WHITE){
+        } else if (player.equals(GomokuPlayer.WHITE)){
             twoRoads = this.getRoads(0,2);
         } else {
             logger.debug("invalid player type");
@@ -306,7 +306,7 @@ public class RoadBoard {
             return true;
         }
 
-        public boolean setStone(Position position, GomokuPlayer player){
+        public boolean setStone(Position position, Player player){
 
             if(this.legal == false){
                 logger.debug(String.format("operate invalid row %d, col %d",position.row(), position.col()));
@@ -325,9 +325,9 @@ public class RoadBoard {
                 this.emptyPoes.remove(position);
                 this.placedPoes.put(position, player.getValue());
                 this.updateRoadPattern(position, 1);
-                if(player == GomokuPlayer.BLACK){
+                if(player.equals(GomokuPlayer.BLACK)){
                     blackStoneCnt ++;
-                } else if(player == GomokuPlayer.WHITE){
+                } else if(player.equals(GomokuPlayer.WHITE)){
                     whiteStoneCnt ++;
                 } else {
                     logger.debug("invalid player");

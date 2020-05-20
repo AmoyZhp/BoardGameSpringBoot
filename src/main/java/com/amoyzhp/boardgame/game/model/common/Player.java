@@ -8,4 +8,5 @@ package com.amoyzhp.boardgame.game.model.common;
  */
 public interface Player {
     int getValue();
+    boolean equals(Player player);
 }

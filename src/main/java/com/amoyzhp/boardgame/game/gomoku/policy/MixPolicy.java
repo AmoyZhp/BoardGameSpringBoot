@@ -8,6 +8,7 @@ import com.amoyzhp.boardgame.game.model.policy.Policy;
 import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.core.Action;
 import com.amoyzhp.boardgame.game.model.core.State;
+import com.amoyzhp.boardgame.game.model.policy.TreeSearchPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,25 +30,25 @@ public class MixPolicy implements Policy {
 
     private GomokuActionsGenerator actionsGenerator;
     private GomokuSimulator simulator;
-    private AlphaBetaPolicy alphaBetaPolicy;
+    private TreeSearchPolicy basicTreeSearchPolicy;
     private ThreatSpaceSearch threatSpaceSearch;
-    private MonteCarloTreeSearch mcts;
-
-    private ConcurrentAlphaBetaPolicy concurrentAlphaBetaPolicy;
 
     private long timeLimit;
     private long beginTime;
     private long currentTime;
 
-    public MixPolicy(){
-        this.simulator = null;
-        this.actionsGenerator = new GomokuActionsGenerator();
-        this.alphaBetaPolicy = new AlphaBetaPolicy();
-        this.threatSpaceSearch = new ThreatSpaceSearch();
-        this.concurrentAlphaBetaPolicy = new ConcurrentAlphaBetaPolicy();
-        this.mcts = new MonteCarloTreeSearch();
+    private MixPolicy(){
+
     }
 
+    public MixPolicy(GomokuActionsGenerator actionsGenerator, TreeSearchPolicy treeSearchPolicy, ThreatSpaceSearch threatSpaceSearch){
+        this.simulator = null;
+        this.actionsGenerator = actionsGenerator;
+        this.basicTreeSearchPolicy = treeSearchPolicy;
+        this.threatSpaceSearch = threatSpaceSearch;
+    }
+
+    @Override
     public Action getAction(State state, Player player){
         return this.getAction(state, player, null);
     }
@@ -63,21 +64,23 @@ public class MixPolicy implements Policy {
 
         if (this.simulator == null){
             this.simulator = new GomokuSimulator(state);
+        } else {
+            this.simulator.setState(state);
         }
 
         GomokuPlayer currentPlayer = GomokuPlayer.paraseValue(player.getValue());
-        GomokuPlayer nextPlayer = GomokuPlayer.getNextPlayer(player.getValue());
+        GomokuPlayer nextPlayer = GomokuPlayer.getNextPlayer(player);
         Action action = null;
         List<Action> actions = new LinkedList<>();
         // 判断我方是否有必胜点
 
-        actions = this.actionsGenerator.getKillAction(simulator, currentPlayer);
+        actions = this.actionsGenerator.getKillAction(simulator.getRoadBoard(), currentPlayer);
         if (actions != null && actions.size() > 0){
             return actions.get(0);
         }
 
         // 否则判断对方有没有必胜点
-        actions = this.actionsGenerator.getKillAction(simulator, nextPlayer);
+        actions = this.actionsGenerator.getKillAction(simulator.getRoadBoard(), nextPlayer);
         if (actions != null && actions.size() > 0){
             return actions.get(0);
         }
@@ -88,7 +91,7 @@ public class MixPolicy implements Policy {
             if(this.timeLimit >= 0){
                 this.timeLimit = Math.max(0, this.timeLimit - (currentTime - beginTime));
             }
-            action = this.threatSpaceSearch.getAction(simulator, currentPlayer, debugInfo.getTssDepth(), this.timeLimit);
+            action = this.threatSpaceSearch.getAction(simulator.getGameState(), currentPlayer, debugInfo.getTssDepth(), this.timeLimit);
             if (action != null){
                 return action;
             }
@@ -98,7 +101,7 @@ public class MixPolicy implements Policy {
             if(this.timeLimit >= 0){
                 this.timeLimit = Math.max(0, this.timeLimit - (currentTime - beginTime));
             }
-            action = this.threatSpaceSearch.getAction(simulator, nextPlayer, debugInfo.getTssDepth(),this.timeLimit);
+            action = this.threatSpaceSearch.getAction(simulator.getGameState(), nextPlayer, debugInfo.getTssDepth(),this.timeLimit);
             if (action != null){
                 return action;
             }
@@ -107,29 +110,26 @@ public class MixPolicy implements Policy {
             if(this.timeLimit >= 0){
                 this.timeLimit = Math.max(0, this.timeLimit - (currentTime - beginTime));
             }
-            action = this.alphaBetaPolicy.getAction(simulator, currentPlayer, debugInfo.getAbDepth(), this.timeLimit);
-//            action = this.mcts.getAction(simulator, currentPlayer);
+
+            action = this.basicTreeSearchPolicy.getAction(simulator.getGameState(), currentPlayer, debugInfo.getAbDepth(), this.timeLimit);
         } else {
 
             // 判断我方可否通过 TSS 获胜
-            action = this.threatSpaceSearch.getAction(simulator, currentPlayer);
+            action = this.threatSpaceSearch.getAction(simulator.getGameState(), currentPlayer);
             if (action != null){
                 return action;
             }
 
             // 判断对方可否通过 TSS 获胜
-            action = this.threatSpaceSearch.getAction(simulator, nextPlayer);
+            action = this.threatSpaceSearch.getAction(simulator.getGameState(), nextPlayer);
             if (action != null){
                 return action;
             }
 
             // 上述都无法找到理想点的话
             // 使用 alpha-beta 剪枝
-            action = this.alphaBetaPolicy.getAction(simulator, currentPlayer);
-//            action = this.mcts.getAction(simulator, currentPlayer);
+            action = this.basicTreeSearchPolicy.getAction(simulator.getGameState(), currentPlayer);
         }
-
-
 
         return action;
     }

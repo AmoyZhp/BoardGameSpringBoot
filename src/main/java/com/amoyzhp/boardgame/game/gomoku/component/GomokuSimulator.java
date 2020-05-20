@@ -20,9 +20,29 @@ public class GomokuSimulator implements Simulator {
     private State state;
     private RoadBoard roadBoard;
     private LinkedList<Action> historyActions;
+    // light 只进行最简单的 state 更新，不更新 roadboard
+    private boolean useRoadBoard;
+    private GomokuEvaluator evaluator;
 
     public GomokuSimulator(State state) {
-        this.state = state;
+        this(state, true);
+    }
+    public GomokuSimulator(State state, boolean useRoadBoard) {
+        this.state = GomokuState.copyState(state);;
+        this.historyActions = new LinkedList<>();
+        this.useRoadBoard = useRoadBoard;
+        if(useRoadBoard){
+            this.roadBoard =  new RoadBoard(this.state.getChessboard());
+            this.evaluator = null;
+        } else {
+            this.roadBoard = null;
+            this.evaluator = GomokuEvaluator.getInstance();
+        }
+
+    }
+
+    public void setState(State state){
+        this.state = GomokuState.copyState(state);
         this.roadBoard = new RoadBoard(this.state.getChessboard());
         this.historyActions = new LinkedList<>();
     }
@@ -35,31 +55,58 @@ public class GomokuSimulator implements Simulator {
         return this.roadBoard;
     }
 
-    public void step(Action action) {
+    public State step(Action action) {
         Position position = action.getPositions().get(0);
         GomokuPlayer player = GomokuPlayer.paraseValue(action.getPlayer().getValue());
         if(this.state.updateState(position, player)){
             // 该方法会更新和 (row, col) 点相关的路上的信息
-            this.roadBoard.updateRoad(position, player);
-            this.historyActions.addLast(action);
-            if(this.state.getEmptyPos().size() == 0 || this.roadBoard.getRoads(player, 5).size() > 0){
-                this.state.setTerminal(true);
+
+            if(useRoadBoard){
+                this.roadBoard.updateRoad(position, player);
+                if(this.state.getEmptyPos().size() == 0 || this.roadBoard.getRoads(player, 5).size() > 0){
+                    this.state.setTerminal(true);
+                } else {
+                    this.state.setTerminal(false);
+                }
             } else {
-                this.state.setTerminal(false);
+                if(state.getEmptyPos().size() == 0 || evaluator.isTerminal(state, action)){
+                    state.setTerminal(true);
+                } else {
+                    state.setTerminal(false);
+                }
             }
+            this.historyActions.addLast(action);
+
+            return this.state;
         }
+        return null;
 
     }
 
-    public void moveBack() {
+    public LinkedList<Action> getHistoryActions(){
+        return this.historyActions;
+    }
+
+    public State moveBack() {
         Action action = this.historyActions.removeLast();
         Position position = action.getPositions().get(0);
-        this.state.updateState(position, GomokuPlayer.EMPTY);
-        this.roadBoard.updateRoad(position, GomokuPlayer.EMPTY);
-        if(this.state.getEmptyPos().size() > 0 && this.roadBoard.getRoads(action.getPlayer(), 5).size() == 0
-            && this.roadBoard.getRoads(GomokuPlayer.getNextPlayer(action.getPlayer().getValue()),
-                5).size() == 0){
-            this.state.setTerminal(false);
+        if(this.state.updateState(position, GomokuPlayer.EMPTY)){
+            if(useRoadBoard){
+                this.roadBoard.updateRoad(position, GomokuPlayer.EMPTY);
+                if(this.state.getEmptyPos().size() > 0 && this.roadBoard.getRoads(action.getPlayer(), 5).size() == 0
+                        && this.roadBoard.getRoads(GomokuPlayer.getNextPlayer(action.getPlayer()),
+                        5).size() == 0){
+                    this.state.setTerminal(false);
+                }
+            } else {
+                if(state.getEmptyPos().size() == 0 || evaluator.isTerminal(state, action)){
+                    state.setTerminal(true);
+                } else {
+                    state.setTerminal(false);
+                }
+            }
+            return this.state;
         }
+        return null;
     }
 }

@@ -25,25 +25,25 @@ public class GomokuEnvironment implements Environment {
     private LinkedList<Action> historyActions;
     private GomokuEvaluator evaluator;
 
+    public GomokuEnvironment(){
+        this.state = new GomokuState(GameConst.WIDTH, GameConst.HEIGHT);
+        this.timestep = 0;
+        this.historyActions = new LinkedList<>();
+        this.evaluator = GomokuEvaluator.getInstance();
+    }
 
-    public void init(State state, LinkedList<Action> historyActions , int timestep){
+    public GomokuEnvironment(State state, LinkedList<Action> historyActions , int timestep){
         this.state = state;
         this.historyActions = historyActions;
         this.timestep = timestep;
-        this.evaluator = new GomokuEvaluator();
+        this.evaluator = GomokuEvaluator.getInstance();
     }
 
+    @Override
     public void reset() {
         this.state.reset();
         this.historyActions.clear();
         this.timestep = 0;
-    }
-
-    @Override
-    public void init(){
-        this.state = new GomokuState(GameConst.WIDTH, GameConst.HEIGHT);
-        this.timestep = 0;
-        this.historyActions = new LinkedList<>();
     }
 
     @Override

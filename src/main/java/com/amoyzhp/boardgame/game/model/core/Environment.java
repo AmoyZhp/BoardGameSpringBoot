@@ -12,7 +12,7 @@ public interface Environment {
     /**
      * 初始化环境，主要是对环境进行初始化
      */
-    void init();
+    void reset();
 
     /**
      * 传入一个 Action，环境会基于这个 action 对当前的 state 作出反应

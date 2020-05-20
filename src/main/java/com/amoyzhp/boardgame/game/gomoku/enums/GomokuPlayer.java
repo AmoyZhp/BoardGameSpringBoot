@@ -31,17 +31,6 @@ public enum GomokuPlayer implements Player {
         return ILLEGAL;
     }
 
-    public static GomokuPlayer getNextPlayer(int playerVal){
-        GomokuPlayer player = GomokuPlayer.paraseValue(playerVal);
-        if(player == WHITE){
-            return BLACK;
-        } else if(player == BLACK){
-            return WHITE;
-        } else {
-            return ILLEGAL;
-        }
-    }
-
     public static GomokuPlayer getNextPlayer(Player player){
         if(player.getValue() == WHITE.getValue()){
             return BLACK;
@@ -51,9 +40,16 @@ public enum GomokuPlayer implements Player {
             return ILLEGAL;
         }
     }
+    @Override
+    public boolean equals(Player player){
+        if(player.getValue() == this.getValue()){
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-
-
+    @Override
     public int getValue() {
         return this.value;
     }

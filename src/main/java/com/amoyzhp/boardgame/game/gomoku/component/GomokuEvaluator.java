@@ -19,17 +19,27 @@ import java.util.Set;
  */
 public class GomokuEvaluator implements Evaluator {
 
+    private static GomokuEvaluator instance = new GomokuEvaluator();
 
-    public int evaluate(RoadBoard roadBoard, GomokuPlayer player) {
+    private GomokuEvaluator(){
+
+    }
+
+    public static GomokuEvaluator getInstance(){
+        return instance;
+    }
+
+
+    public int evaluate(RoadBoard roadBoard, Player player) {
         int whiteVal = 0;
         int blackVal = 0;
         for(int i = 1; i <= 5; i++){
             blackVal += roadBoard.getRoads(i,0).size() * GameConst.ROAD_VALUES[i];
             whiteVal += roadBoard.getRoads(0,i).size() * GameConst.ROAD_VALUES[i];
         }
-        if(player == GomokuPlayer.BLACK){
+        if(player.equals(GomokuPlayer.BLACK) ){
             return blackVal - whiteVal;
-        } else if(player == GomokuPlayer.WHITE){
+        } else if(player.equals(GomokuPlayer.WHITE)){
             return whiteVal - blackVal;
         }
         return -1;

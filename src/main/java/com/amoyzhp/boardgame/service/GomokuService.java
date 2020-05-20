@@ -7,6 +7,7 @@ import com.amoyzhp.boardgame.dto.gomoku.GomokuStateDTO;
 import com.amoyzhp.boardgame.game.gomoku.core.*;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
 import com.amoyzhp.boardgame.game.model.core.Action;
+import com.amoyzhp.boardgame.game.model.core.Agent;
 import com.amoyzhp.boardgame.game.model.core.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,7 @@ public class GomokuService {
     public GomokuGameDTO getNextAction(State state, LinkedList<Action> historyActions,
                                        int requiredPlayer, int timestep, DebugInfo debugInfo) {
         GomokuAgent agent = new GomokuAgent(GomokuPlayer.paraseValue(requiredPlayer));
-        GomokuEnvironment env = new GomokuEnvironment();
-        env.init(state, historyActions, timestep);
+        GomokuEnvironment env = new GomokuEnvironment(state, historyActions, timestep);
         // 获取下一个行动和状态
         Action action = agent.act(state, timestep, debugInfo);
         State nextState = env.step(action);

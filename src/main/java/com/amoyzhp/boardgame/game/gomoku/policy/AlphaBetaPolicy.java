@@ -4,10 +4,12 @@ import com.amoyzhp.boardgame.game.gomoku.component.GomokuActionsGenerator;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuEvaluator;
 import com.amoyzhp.boardgame.game.gomoku.component.GomokuSimulator;
 import com.amoyzhp.boardgame.game.gomoku.enums.GomokuPlayer;
+import com.amoyzhp.boardgame.game.model.component.Simulator;
 import com.amoyzhp.boardgame.game.model.policy.Policy;
 import com.amoyzhp.boardgame.game.model.common.Player;
 import com.amoyzhp.boardgame.game.model.core.Action;
 import com.amoyzhp.boardgame.game.model.core.State;
+import com.amoyzhp.boardgame.game.model.policy.TreeSearchPolicy;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,7 @@ import java.util.Map;
  * @Author: Tuseday Boy
  * @CreatedDate: 2020/03/30
  */
-public class AlphaBetaPolicy implements Policy {
+public class AlphaBetaPolicy implements TreeSearchPolicy {
 
     private final int DEFAULT_DEPTH = 1;
     // -1 就是没有限制
@@ -43,49 +45,51 @@ public class AlphaBetaPolicy implements Policy {
     private long currentTime;
     private long timeLimit;
 
-    public AlphaBetaPolicy(){
-        this.moveGenerator = new GomokuActionsGenerator();
-        this.evaluator = new GomokuEvaluator();
+    private AlphaBetaPolicy(){
+
+    }
+
+    public AlphaBetaPolicy(GomokuActionsGenerator actionsGenerator, GomokuEvaluator evaluator){
+        this.moveGenerator = actionsGenerator;
+        this.evaluator = evaluator;
         this.translationTable = new HashMap<>();
     }
 
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player){
-        return this.getAction(simulator, player, this.DEFAULT_DEPTH, this.DEFAULT_TIME_LIMIT);
+    @Override
+    public Action getAction(State state, Player player) {
+        return this.getAction(state, player, this.DEFAULT_DEPTH, this.DEFAULT_TIME_LIMIT);
     }
 
-    public Action getAction(GomokuSimulator simulator, GomokuPlayer player, int depth, long timeLimit) {
-        if(depth <= 0){
-            depth = 1;
+    @Override
+    public Action getAction(State state, Player player, int depth, long timeLimit) {
+
+        // 如果 depth 小于等于 0 则强制等于 1
+        // depth = 0 没有实际意义
+        depth = depth <= 0 ? 1 : depth;
+        // 如果 timeLimit < 0 则让它等于 -1。即无超时限制。
+        this.timeLimit = timeLimit < 0 ? -1 : timeLimit;
+
+        if(this.simulator == null){
+            this.simulator = new GomokuSimulator(state);
+        } else {
+            this.simulator.setState(state);
         }
-        this.timeLimit = timeLimit;
-        if(this.timeLimit < 0){
-            this.timeLimit = -1;
-        }
+
 
         this.beginTime = System.currentTimeMillis();
-
         this.translationTable = new HashMap<>((int)Math.pow(10, depth));
-        this.simulator = simulator;
-        int initStateHashcode = simulator.getGameState().hashCode();
         Action action = null;
         int beta = Integer.MAX_VALUE;
         int alpha = Integer.MIN_VALUE;
-
-        int nextPlayer = GomokuPlayer.getNextPlayer(player.getValue()).getValue();
-
+        int nextPlayer = GomokuPlayer.getNextPlayer(player).getValue();
         // 获取用来进行搜索的候选点
-        List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator, player);
+        List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator.getRoadBoard(),
+                GomokuPlayer.paraseValue(player.getValue()));
         List<ActionNode> selectedActionNodes = new ArrayList<>(candidateActions.size());
-        logger.info("ab depth is " + depth);
-        logger.info("time limit" + this.timeLimit);
         for(Action act : candidateActions){
-            int hash = this.simulator.getGameState().hashCode();
             this.simulator.step(act);
             int temp = this.alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, player.getValue());
             this.simulator.moveBack();
-            if(hash != this.simulator.getGameState().hashCode()){
-                logger.info("zobrist hash code error");
-            }
             selectedActionNodes.add(new ActionNode(act, temp));
         }
 
@@ -96,7 +100,6 @@ public class AlphaBetaPolicy implements Policy {
         if(selectedActionNodes.size() > 0){
             action = selectedActionNodes.get(0).getAction();
         }
-        assert  initStateHashcode == simulator.getGameState().hashCode();
         this.currentTime = System.currentTimeMillis();
         logger.info("AB search time is " + (currentTime - beginTime) / 1000.0 + " s ");
         return  action;
@@ -114,8 +117,8 @@ public class AlphaBetaPolicy implements Policy {
             }
         }
 
-        int nextPlayer = GomokuPlayer.getNextPlayer(player).getValue();
-        List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator,
+        int nextPlayer = GomokuPlayer.getNextPlayer(GomokuPlayer.paraseValue(player)).getValue();
+        List<Action> candidateActions = this.moveGenerator.getAlphaBetaCandidateActions(this.simulator.getRoadBoard(),
                 GomokuPlayer.paraseValue(player));
         for(Action action : candidateActions){
             this.simulator.step(action);
@@ -123,8 +126,6 @@ public class AlphaBetaPolicy implements Policy {
             if(temp == -1){
                 temp = alphaBetaTreeSearch(alpha, beta, depth-1, nextPlayer, requiredPlayer);
                 this.translationTable.put(this.simulator.getGameState().hashCode(), temp);
-            } else {
-//                logger.info(" translation table shot");
             }
             this.simulator.moveBack();
             if(requiredPlayer == player){
@@ -146,11 +147,6 @@ public class AlphaBetaPolicy implements Policy {
             // 是极小层
             return beta;
         }
-    }
-
-    @Override
-    public Action getAction(State state, Player player) {
-        return null;
     }
 
     @Data

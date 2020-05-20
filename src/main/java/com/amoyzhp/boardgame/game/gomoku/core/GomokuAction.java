@@ -16,22 +16,16 @@ import java.util.List;
  * @CreatedDate: 2020/03/09
  */
 public class GomokuAction implements Action {
-    private GomokuPlayer player;
+    private Player player;
     private Position position;
 
-    public GomokuAction(int row, int col, GomokuPlayer player){
-        this.player = player;
-        this.position = new Position(row, col);
-
-    }
-
-    public GomokuAction(Position position, GomokuPlayer player){
+    public GomokuAction(Position position, Player player){
         this.position = position;
         this.player = player;
     }
 
     public static GomokuAction valueOfDTO(GomokuActionDTO actionDTO){
-        GomokuAction action = new GomokuAction(actionDTO.getRow(), actionDTO.getCol(),
+        GomokuAction action = new GomokuAction(new Position(actionDTO.getRow(), actionDTO.getCol()),
                 GomokuPlayer.paraseValue(actionDTO.getPlayer()));
         return action;
     }
